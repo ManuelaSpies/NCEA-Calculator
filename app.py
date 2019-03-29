@@ -60,7 +60,6 @@ def get_credits(name, query):
     e_total = 0
     m_total = 0
     a_total = 0
-    n_total = 0
 
     for standard in entries:
         if standard[1] == "E":
@@ -69,8 +68,6 @@ def get_credits(name, query):
             m_total += standard[0]
         elif standard[1] == "A":
             a_total += standard[0]
-        elif standard[1] == "N":
-            n_total += standard[0]
 
     if name == "Level 1":
         goal = 80
@@ -86,7 +83,7 @@ def get_credits(name, query):
         left = 0
 
     print("STATUS: get_credits completed.")
-    return [name, total, e_total, m_total, a_total, n_total, left]
+    return [name, total, e_total, m_total, a_total, left]
 
 
 def credits_numbers():

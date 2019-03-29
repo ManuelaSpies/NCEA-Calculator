@@ -13,16 +13,20 @@
         <table class="table">
             <tr>
                 <th>Grade</th>
-                <th>Achieved</th>
-                <th>Merit</th>
+                <th>All</th>
                 <th>Excellence</th>
+                <th>Merit</th>
+                <th>Achieved</th>
+                <th>Left</th>
             </tr>
-{% for entry in entries %}
+{% for result in results %}
             <tr>
-                <td>results[0]</td>
-                <td>results[3]</td>
-                <td>results[2]</td>
-                <td>results[1]</td>
+                <td><em>{{  result[0] }}</em></td>
+                <td>{{  result[1] }}</td>
+                <td>{{  result[2] }}</td>
+                <td>{{  result[3] }}</td>
+                <td>{{  result[4] }}</td>
+                <td>{{  result[5] }}</td>
             </tr>
 {% endfor %}
         </table>
