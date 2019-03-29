@@ -7,8 +7,7 @@
         <!-- Boostrap CSS package -->
         <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
 
-        <link rel="stylesheet" href="{{ url_for('static, filename='css/style.css') }}">
-        <!-- Title -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
         {% block head %}
             <title>{% block title %}{% endblock %} | NCEA Calculator</title>
         {% endblock %}
@@ -21,11 +20,11 @@
                 <a class="nav-link active" href="/">Home</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/enter">Enter new standards!</a>
+                <a class="nav-link" href="/overview">Full Overview</a>
             </li>
         </ul>
                             <!-- CONTENT GOES HERE -->
-        <h1>NCEA CREDIT CALCULATOR</h1>
+        <h1>Credit Calculator</h1>
         {% block body %}{% endblock %}
     </div>
                             <!-- Footer -->
