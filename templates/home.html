@@ -1,14 +1,30 @@
 {% extends "base.html" %}
 
-{% block title %} Home | NCEA Calculator {% endblock %}
 
 {% block head %}
 <!--{{ super() }}-->
+
+{% block title %} Home | NCEA Calculator {% endblock %}
 {% endblock %}
 
 {% block body %}
-
 <!--CONTENT-->
-
+    <div class="container">
+        <table>
+            <tr>
+                <th>All</th>
+                <th>Level 3</th>
+                <th>Level 2</th>
+                <th>Level 1</th>
+            </tr>
+{% for entry in entries %}
+            <tr>
+                <td>results[0]</td>
+                <td>results[1]</td>
+                <td>results[2]</td>
+                <td>results[3]</td>
+            </tr>
+{% endfor %}
+        </table>
+    </div>
 {% endblock %}
-

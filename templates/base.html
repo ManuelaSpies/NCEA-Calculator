@@ -3,13 +3,14 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-        <link href="https://fonts.googleapis.com/css?family=Bellefair|Work+Sans:200" rel="stylesheet">
+
+        <!-- Boostrap CSS package -->
         <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/all.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/blog.css') }}">
+
+        <link rel="stylesheet" href="{{ url_for('static, filename='css/style.css') }}">
+        <!-- Title -->
         {% block head %}
-            <title>{% block title %}{% endblock %}</title>
+            <title>{% block title %}{% endblock %} | NCEA Calculator</title>
         {% endblock %}
     </head>
     <body>

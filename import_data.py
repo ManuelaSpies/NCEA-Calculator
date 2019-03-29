@@ -22,18 +22,18 @@ create_table_result = """CREATE TABLE IF NOT EXISTS result(
 
 
 # Get Credits queries
-get_credits_all_query = """SELECT standard.credits, result.grade
-            FROM standard, result
-            WHERE standard_id = as_id;"""
-get_credits_l3_query = """SELECT standard.credits, result.grade
-            FROM standard, result
-            WHERE standard_id = as_id
+get_credits_all_query = """SELECT credits, grade
+            FROM result JOIN standard
+            ON as_id = standard_name;"""
+get_credits_l3_query = """SELECT credits, grade
+            FROM result JOIN standard
+            ON as_id = standard_name
             AND ncea_level = 3;"""
-get_credits_12_query = """SELECT standard.credits, result.grade
-            FROM standard, result
-            WHERE standard_id = as_id
+get_credits_12_query = """SELECT credits, grade
+            FROM result JOIN standard
+            ON as_id = standard_name
             AND ncea_level = 2;"""
-get_credits_l1_query = """SELECT standard.credits, result.grade
-            FROM standard, result
-            WHERE standard_id = as_id
+get_credits_l1_query = """SELECT credits, grade
+            FROM result JOIN standard
+            ON as_id = standard_name
             AND ncea_level = 1;"""

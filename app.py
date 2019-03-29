@@ -41,19 +41,19 @@ def initialise_tables(con):
     execute_query(con, create_table_standard)
     execute_query(con, create_table_result)
 
-    # Inserts Values into Tables
-    # Not done yet :P
+    # Auto inserts Values into Tables
 
     print("STATUS: initialise_tables() completed.")
 
 
-def get_credits(query):
+def get_credits(name, query):
     """counts and sorts all existing credits by grade."""
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
 
     cur.execute(query)
     entries = cur.fetchall()
+    print("Entries:", entries)
     for entry in entries:
         print(entry)
 
@@ -79,14 +79,14 @@ def get_credits(query):
         left = 0
 
     print("STATUS: get_credits completed.")
-    return [total, e_total, m_total, a_total, n_total, left]
+    return [name, total, e_total, m_total, a_total, n_total, left]
 
 
 def credits_numbers():
-    all_credits = get_credits(get_credits_all_query)
-    l3_credits = get_credits(get_credits_l3_query)
-    l2_credits = get_credits(get_credits_12_query)
-    l1_credits = get_credits(get_credits_l1_query)
+    all_credits = get_credits("All", get_credits_all_query)
+    l3_credits = get_credits("Level 3", get_credits_l3_query)
+    l2_credits = get_credits("Level 2", get_credits_12_query)
+    l1_credits = get_credits("Level 1", get_credits_l1_query)
 
     return [all_credits, l3_credits, l2_credits, l1_credits]
 
@@ -96,7 +96,7 @@ def home():
     credits_package = credits_numbers()
     print("AUSGABE: All credits: ", credits_package)
 
-    return render_template("home.html", credits_package=credits_package)
+    return render_template("home.html", results=credits_package)
 
 
 if __name__ == "__main__":
