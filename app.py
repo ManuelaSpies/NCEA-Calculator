@@ -72,9 +72,16 @@ def get_credits(name, query):
         elif standard[1] == "N":
             n_total += standard[0]
 
+    if name == "Level 1":
+        goal = 80
+    elif name == "All":
+        goal = 0
+    else:
+        goal = 60
+
     total = e_total + m_total + a_total
-    if total < 80:
-        left = 80 - e_total - m_total - a_total
+    if total < goal:
+        left = goal - e_total - m_total - a_total
     else:
         left = 0
 
