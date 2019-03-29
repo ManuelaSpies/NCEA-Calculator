@@ -53,7 +53,7 @@ def get_credits(name, query):
 
     cur.execute(query)
     entries = cur.fetchall()
-    print("Entries:", entries)
+    print("Entries: ", entries)
     for entry in entries:
         print(entry)
 
