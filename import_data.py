@@ -18,7 +18,13 @@ create_table_result = """CREATE TABLE IF NOT EXISTS result(
                             grade text NOT NULL);
                             """
 
-# Queries to import data
+# Queries to insert test data
+test_data_standard = """INSERT INTO standard (standard_id, standard_name, description,  credits, ncea_level, lit_reading, lit_writing, numeracy, ue_credits) VALUES (NULL, 91367, 'Demonstrate understanding of advanced concepts relating to managing shared information within information systems	', 3, 2, 0,0,0,0), (NULL, 91215, 'Discuss a drama or theatre form or period with reference to a text', 4, 2, 0,0,0,0);"""
+test_data_result = """INSERT INTO result (entry_id, as_id, grade) VALUES(NULL, 91215, 'M'), (NULL, 91367, 'E');"""
+
+# Queries to count table rows
+count_rows_standard = """SELECT COUNT(*) FROM standard;"""
+count_rows_result = """SELECT COUNT(*) FROM result;"""
 
 
 # Get Credits queries

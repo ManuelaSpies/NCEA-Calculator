@@ -1,5 +1,18 @@
 /* General Classes */
 
 .content {
-    margin-top: 60px !important;
+}
+
+.piechart {
+    height: 200px !important;
+    width: 200px !important;
+    display: inline-block;
+}
+
+.custom-nav {
+    margin-bottom: 10px !important;
+}
+
+rect{
+    width:25%;
 }

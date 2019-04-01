@@ -26,7 +26,7 @@ def execute_query(con, query):
     if con is not None:
         try:
             c = con.cursor()
-            c.execute(query)
+            return c.execute(query)
         except Error as e:
             print(e)
     else:
@@ -42,6 +42,15 @@ def initialise_tables(con):
     execute_query(con, create_table_result)
 
     # Auto inserts Values into Tables
+    count_standard = execute_query(con, count_rows_standard).fetchall()[0][0]
+    if count_standard == 0:
+        execute_query(con, test_data_standard)
+        print("Standard Table data entered into empty database.")
+
+    count_result = execute_query(con, count_rows_result).fetchall()[0][0]
+    if count_result == 0:
+        execute_query(con, test_data_result)
+        print("Standard Table data entered into empty database.")
 
     print("STATUS: initialise_tables() completed.")
 
@@ -98,9 +107,16 @@ def credits_numbers():
 @app.route('/')
 def home():
     credits_package = credits_numbers()
-    print("AUSGABE: All credits: ", credits_package)
+    print("OUTPUT: All credits: ", credits_package)
 
+    # Credit's Package: [[all [name, total, e, m, a, left], l3, l2, l1]
     return render_template("home.html", results=credits_package)
+
+
+@app.route('/overview')
+def overview():
+
+    return "osikjdoiskl"
 
 
 if __name__ == "__main__":
