@@ -7,124 +7,108 @@
 {% endblock %}
 
 {% block body %}
-    <h1>NCEA Credit Calculator</h1>
-    <div class="piechart" id="all_credits_piechart"></div>
-    <div class="piechart" id="l3_credits_piechart"></div>
-    <div class="piechart" id="l2_credits_piechart"></div>
-    <div class="piechart" id="l1_credits_piechart"></div>
-    <div class="container">
-        <table class="table">
-            <tr>
-                <th>Grade</th>
-                <th>All</th>
-                <th>Excellence</th>
-                <th>Merit</th>
-                <th>Achieved</th>
-                <th>Left</th>
-            </tr>
+    <h1>Your Credits</h1>
 
-            {% for result in results %}
-                <tr>
-                    <td><em>{{  result[0] }}</em></td>
-                    <td>{{  result[1] }}</td>
-                    <td>{{  result[2] }}</td>
-                    <td>{{  result[3] }}</td>
-                    <td>{{  result[4] }}</td>
-                    <td>{{  result[5] }}</td>
-                </tr>
-            {% endfor %}
-        </table>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="tabber">
+                    <div class="btn-group btn-group-justified">
+                        <button class="btn btn-default btn-custom" type="button" onclick="openChart('all')">All
+                            Credits
+                        </button>
+                        <button class="btn btn-default btn-custom" type="button" onclick="openChart('l3')">
+                            Level 3
+                        </button>
+                        <button class="btn btn-default btn-custom" type="button" onclick="openChart('l2')">
+                            Level 2
+                        </button>
+                        <button class="btn btn-default btn-custom" type="button" onclick="openChart('l1')">
+                            Level 1
+                        </button>
+                    </div>
+
+
+                    <div id="all" class="piechart-block">
+                        <div class="piechart" id="all_chart"></div>
+                    </div>
+
+                    <div id="l3" class="piechart-block" style="display:none;">
+                        <div class="piechart" id="l3_chart"></div>
+                    </div>
+
+                    <div id="l2" class="piechart-block" style="display:none;">
+                        <div class="piechart" id="l2_chart"></div>
+                    </div>
+
+                    <div id="l1" class="piechart-block" style="display:none;">
+                        <div class="piechart" id="l1_chart"></div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="credits-table">
+                    <table class="table">
+                        <tr>
+                            <th>Grade</th>
+                            <th>All</th>
+                            <th>Excellence</th>
+                            <th>Merit</th>
+                            <th>Achieved</th>
+                            <th>Left</th>
+                        </tr>
+
+                        {% for result in results %}
+                            <tr>
+                                <td><strong>{{ result[0] }}</strong></td>
+                                <td>{{ result[1] }}</td>
+                                <td>{{ result[2] }}</td>
+                                <td>{{ result[3] }}</td>
+                                <td>{{ result[4] }}</td>
+                                <td>{{ result[5] }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 {% endblock %}
 {% block footer %}
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    {% for chart in results %}
+        <script type="text/javascript">
+            // Load google charts
+            google.charts.load('current', {'packages': ['corechart']});
+            google.charts.setOnLoadCallback(drawChart);
 
-    <!-- ALL CREDITS CHART -->
-    <script type="text/javascript">
-        // Load google charts
-        google.charts.load('current', {'packages':['corechart']});
-        google.charts.setOnLoadCallback(drawChart);
+            // Draw the chart and set the chart values
+            function drawChart() {
+                var data = google.visualization.arrayToDataTable([
+                    ['Grade', 'Credits'],
+                    ['Excellence', {{ chart[2] }}],
+                    ['Merit', {{ chart[3] }}],
+                    ['Achieved', {{ chart[4] }}],
+                    ['Left', {{ chart[5] }}]
 
-        // Draw the chart and set the chart values
-        function drawChart() {
-          var data = google.visualization.arrayToDataTable([
-          ['Grade', 'Credits'],
-          ['Excellence', {{ results[0][2] }} ],
-          ['Merit', {{ results[0][3] }} ],
-          ['Achieved', {{ results[0][4] }} ],
-          ['Left', {{ results[0][5] }} ]
+                ]);
+                var options = {'title': '{{ chart[0] }}', 'height': 200, 'width': 400};
 
-        ]);
-          var options = {'title':'All Credits'};
+                var chart = new google.visualization.PieChart(document.getElementById('{{ chart[6] }}_chart'));
+                chart.draw(data, options);
+            }
+        </script>
+    {% endfor %}
 
-          var chart = new google.visualization.PieChart(document.getElementById('all_credits_piechart'));
-          chart.draw(data, options);
-        }
-    </script>
-        <!-- L3 CREDITS CHART -->
-    <script type="text/javascript">
-        // Load google charts
-        google.charts.load('current', {'packages':['corechart']});
-        google.charts.setOnLoadCallback(drawChart);
-
-        // Draw the chart and set the chart values
-        function drawChart() {
-          var data = google.visualization.arrayToDataTable([
-          ['Grade', 'Credits'],
-          ['Excellence', {{ results[1][2] }} ],
-          ['Merit', {{ results[1][3] }} ],
-          ['Achieved', {{ results[1][4] }} ],
-          ['Left', {{ results[1][5] }} ]
-
-        ]);
-          var options = {'title':'Level 3'};
-
-          var chart = new google.visualization.PieChart(document.getElementById('l3_credits_piechart'));
-          chart.draw(data, options);
-        }
-    </script>
-        <!-- L2 CREDITS CHART -->
-    <script type="text/javascript">
-        // Load google charts
-        google.charts.load('current', {'packages':['corechart']});
-        google.charts.setOnLoadCallback(drawChart);
-
-        // Draw the chart and set the chart values
-        function drawChart() {
-          var data = google.visualization.arrayToDataTable([
-          ['Grade', 'Credits'],
-          ['Excellence', {{ results[2][2] }} ],
-          ['Merit', {{ results[2][3] }} ],
-          ['Achieved', {{ results[2][4] }} ],
-          ['Left', {{ results[2][5] }} ]
-
-        ]);
-          var options = {'title':'Level 2'};
-
-          var chart = new google.visualization.PieChart(document.getElementById('l2_credits_piechart'));
-          chart.draw(data, options);
-        }
-    </script>
-        <!-- ALL CREDITS CHART -->
-    <script type="text/javascript">
-        // Load google charts
-        google.charts.load('current', {'packages':['corechart']});
-        google.charts.setOnLoadCallback(drawChart);
-
-        // Draw the chart and set the chart values
-        function drawChart() {
-          var data = google.visualization.arrayToDataTable([
-          ['Grade', 'Credits'],
-          ['Excellence', {{ results[3][2] }} ],
-          ['Merit', {{ results[3][3] }} ],
-          ['Achieved', {{ results[3][4] }} ],
-          ['Left', {{ results[3][5] }} ]
-
-        ]);
-          var options = {'title':'Level 1'};
-
-          var chart = new google.visualization.PieChart(document.getElementById('l1_credits_piechart'));
-          chart.draw(data, options);
+    <script>
+        function openChart(name) {
+            var i;
+            var x = document.getElementsByClassName("piechart-block");
+            for (i = 0; i < x.length; i++) {
+                x[i].style.display = "none";
+            }
+            document.getElementById(name).style.display = "block";
         }
     </script>
 {% endblock %}

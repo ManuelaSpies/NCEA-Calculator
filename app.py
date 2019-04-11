@@ -101,22 +101,29 @@ def credits_numbers():
     l2_credits = get_credits("Level 2", get_credits_12_query)
     l1_credits = get_credits("Level 1", get_credits_l1_query)
 
+    all_credits.append('all')
+    l3_credits.append('l3')
+    l2_credits.append('l2')
+    l1_credits.append('l1')
+
     return [all_credits, l3_credits, l2_credits, l1_credits]
 
 
 @app.route('/')
 def home():
     credits_package = credits_numbers()
+
     print("OUTPUT: All credits: ", credits_package)
 
-    # Credit's Package: [[all [name, total, e, m, a, left], l3, l2, l1]
+    # Credit's Package: [[all [name, total, e, m, a, left, codename (all/l3/...)], l3, l2, l1]
     return render_template("home.html", results=credits_package)
 
 
 @app.route('/overview')
 def overview():
+    standards = [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7]]
 
-    return "osikjdoiskl"
+    return render_template("overview.html", standards=standards)
 
 
 if __name__ == "__main__":

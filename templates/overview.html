@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %} Overview {% endblock %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block body %}
+    <div class="piechart_block">
+        <!-- Here, the pie charts go -->
+    </div>
+    <div class="">
+        <!-- Here, a table of
+        - x / 80 or 60 credits for L1/L2/L3
+        - L1 Numeracy
+        - L1 Literacy
+        - UE Literacy
+        - UE Subjects (later)
+        - M/E endorsements for each level
+         -->
+    </div>
+    <div class="">
+        <!-- Table with all standards -->
+        <table>
+            <tr>
+                <th>Standard</th>
+                <th>Description</th>
+                <th>NCEA Level</th>
+                <th>L1 Numeracy</th>
+                <th>L1 Literacy</th>
+                <th>UE Reading</th>
+                <th>UE Writing</th>
+            </tr>
+            {% for row in standards %}
+                <tr>
+                    <td>{{ row[1] }}</td>
+                    <td>{{ row[2] }}</td>
+                    <td>{{ row[3] }}</td>
+                    <td>{{ row[4] }}</td>
+                    <td>{{ row[5] }}</td>
+                    <td>{{ row[6] }}</td>
+                    <td>{{ row[7] }}</td>
+                </tr>
+            {%  endfor %}
+        </table>
+    </div>
+{% endblock %}
+
+{% block footer %}
+{% endblock %}

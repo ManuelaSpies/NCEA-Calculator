@@ -5,14 +5,42 @@
 
 .piechart {
     height: 200px !important;
-    width: 200px !important;
+    width: 25% !important;
     display: inline-block;
+    padding: 0;
+    margin: 0;
+}
+
+.piechart_block {
+    margin: 0 auto;
+    padding: 0 auto;
+    width: 100%;
+}
+
+.tabber {
+    display: inline;
+    width: 50%;
+}
+
+.credits-table {
+    display: inline;
+    width: 50%;
 }
 
 .custom-nav {
     margin-bottom: 10px !important;
+    z-index: 0 !important;
 }
 
-rect{
-    width:25%;
+main {
+}
+
+/*.piechart_block rect,.piechart_block svg{*/
+    /*width: 100%;*/
+/*}*/
+
+/* DESIGN */
+
+h1 {
+    text-align: right;
 }
