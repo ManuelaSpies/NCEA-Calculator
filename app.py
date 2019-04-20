@@ -108,7 +108,6 @@ def credits_numbers():
 
     return [all_credits, l3_credits, l2_credits, l1_credits]
 
-
 @app.route('/')
 def home():
     credits_package = credits_numbers()
@@ -121,9 +120,36 @@ def home():
 
 @app.route('/overview')
 def overview():
-    standards = [[0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 3, 4, 5, 6, 7]]
+    # LIST OF ALL COMPLETED STANDARDS
+    con = create_connection(DATABASE_NAME)
+    cur = con.cursor()
 
-    return render_template("overview.html", standards=standards)
+    cur.execute(get_all_done_standards)
+    standards = cur.fetchall()
+
+    # LIST OF ALL CREDITS BY GRADE / LEVEL
+    credits_package = credits_numbers()
+
+    # LEVEL ENDORSEMENT ["level", To E Endorsement, To M Endorsement]
+    endorsement_data = [["l3", 50-credits_package[1][2], 50-credits_package[1][3]-credits_package[1][2]],
+                        ["l2", 50-credits_package[2][2], 50-credits_package[2][3]-credits_package[1][2]],
+                        ["l1", 50-credits_package[3][2], 50-credits_package[3][3]-credits_package[1][2]]]
+
+    for level in endorsement_data:
+        if level[1] < 0:
+            level[1] = 0
+        if level[2] < 0:
+            level[2] = 0
+
+    # OTHER DATA
+    other_data = [endorsement_data, ["literacy", "numeracy", "reading", "writing"]]
+
+    return render_template("overview.html", standards=standards, results=credits_package, other=other_data)
+
+
+@app.route('/new-entry')
+def new_entry():
+    return render_template("entry.html")
 
 
 if __name__ == "__main__":

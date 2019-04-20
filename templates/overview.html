@@ -11,6 +11,8 @@
         <!-- Here, the pie charts go -->
     </div>
     <div class="">
+        <h2>NCEA Progress</h2>
+        <div class="piechart" id="progress_bar"></div>
         <!-- Here, a table of
         - x / 80 or 60 credits for L1/L2/L3
         - L1 Numeracy
@@ -19,10 +21,53 @@
         - UE Subjects (later)
         - M/E endorsements for each level
          -->
+        <table class="table table-hover table-condensed">
+            <tr>
+                <th>Level 1 Credits</th>
+                <td>
+                    XX / 80
+                    <br>XX until Excellence Endorsement
+                    <br>XX until Merit Endorsement
+                </td>
+            </tr>
+            <tr>
+                <th>Level 2 Credits</th>
+                <td>
+                    XX / 60
+                    <br>XX until Excellence Endorsement
+                    <br>XX until Merit Endorsement
+                </td>
+            </tr>
+            <tr>
+                <th>Level 3 Credits</th>
+                <td>
+                    XX / 60
+                    <br>XX until Excellence Endorsement
+                    <br>XX until Merit Endorsement
+                </td>
+            </tr>
+            <tr>
+                <th>Level 1 Literacy</th>
+                <td>XX / 60</td>
+            </tr>
+            <tr>
+                <th>Level 1 Numeracy</th>
+                <td>XX / 60</td>
+            </tr>
+            <tr>
+                <th>UE Literacy Reading</th>
+                <td>XX / 5</td>
+            </tr>
+            <tr>
+                <th>UE Literacy Writing</th>
+                <td>XX / 5</td>
+            </tr>
+        </table>
     </div>
     <div class="">
         <!-- Table with all standards -->
-        <table>
+        <h2>All Standards</h2>
+        <table class="table table-hover table-condensed">
             <tr>
                 <th>Standard</th>
                 <th>Description</th>
@@ -31,16 +76,20 @@
                 <th>L1 Literacy</th>
                 <th>UE Reading</th>
                 <th>UE Writing</th>
+                <th>UE Credits</th>
+                <th>Grade</th>
             </tr>
             {% for row in standards %}
                 <tr>
                     <td>{{ row[1] }}</td>
-                    <td>{{ row[2] }}</td>
                     <td>{{ row[3] }}</td>
                     <td>{{ row[4] }}</td>
                     <td>{{ row[5] }}</td>
                     <td>{{ row[6] }}</td>
                     <td>{{ row[7] }}</td>
+                    <td>{{ row[8] }}</td>
+                    <td>{{ row[9] }}</td>
+                    <td>{{ row[2] }}</td>
                 </tr>
             {%  endfor %}
         </table>
@@ -48,4 +97,21 @@
 {% endblock %}
 
 {% block footer %}
+    <script type="text/javascript">
+        // Load google charts
+        google.charts.load('current', {'packages': ['corechart','bar']});
+        google.charts.setOnLoadCallback(drawChart);
+
+        // Draw the chart and set the chart values
+        function drawChart() {
+            var data = google.visualization.arrayToDataTable([
+                ['Excellence', 3]
+
+            ]);
+            var options = {'title': '{Progress', 'height': 200, 'width': 400};
+
+            var chart = new google.visualization.PieChart(document.getElementById('progress_bar'));
+            chart.draw(data, options);
+        }
+    </script>
 {% endblock %}
