@@ -108,6 +108,7 @@ def credits_numbers():
 
     return [all_credits, l3_credits, l2_credits, l1_credits]
 
+
 @app.route('/')
 def home():
     credits_package = credits_numbers()
@@ -147,9 +148,9 @@ def overview():
     return render_template("overview.html", standards=standards, results=credits_package, other=other_data)
 
 
-@app.route('/new-entry')
-def new_entry():
-    return render_template("entry.html")
+@app.route('/add-achievement')
+def add_credits():
+    return render_template("enter_credits.html")
 
 
 if __name__ == "__main__":

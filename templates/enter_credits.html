@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %} New Entry {% endblock %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block body %}
+    <h1>New Entries</h1>
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <form class="form-horizontal">
+                    <fieldset>
+                        <!-- Form Name -->
+                        <legend>Form Name</legend>
+
+                        <!-- Select AS Standard-->
+                        <div class="form-group">
+                          <label class="col-md-4 control-label" for="input_as">AS Number</label>
+                          <div class="col-md-4">
+                          <input id="input_as" name="input_as" type="text" placeholder="i.e. 912236" class="form-control input-md">
+                          <span class="help-block">Enter ONLY the number</span>
+                          </div>
+                        </div>
+
+                        <!-- Select Grade -->
+                        <div class="form-group">
+                          <label class="col-md-4 control-label" for="input_grade">Grade</label>
+                          <div class="col-md-4">
+                            <select id="input_grade" name="input_grade" class="form-control">
+                              <option value="A">Achieved</option>
+                              <option value="M">Merit</option>
+                              <option value="E">Excellence</option>
+                            </select>
+                          </div>
+                        </div>
+
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block footer %}
+{% endblock %}
