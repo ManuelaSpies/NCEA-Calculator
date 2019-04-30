@@ -68,14 +68,15 @@
                                 <td>{{ result[5] }}</td>
                             </tr>
                         {% endfor %}
+                    </table>
             </div>
         </div>
     </div>
 {% endblock %}
 {% block footer %}
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
     {% for chart in results %}
-        <script type="text/javascript">
+        <script>
             // Load google charts
             google.charts.load('current', {'packages': ['corechart']});
             google.charts.setOnLoadCallback(drawChart);

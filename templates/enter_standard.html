@@ -1,4 +1,14 @@
-                <form class="form-horizontal">
+{% extends "base.html" %}
+
+{% block title %} Add Standard {% endblock %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block body %}
+    <h1>Enter Your Achieved Standard</h1>
+    <form class="form-horizontal">
                     <fieldset>
                         <!-- NAME -->
                         <legend>Enter Standards</legend>
@@ -54,7 +64,7 @@
                                     <div class="form-group">
                                   <label class="col-md-4 control-label" for="standard_description">Description</label>
                                   <div class="col-md-4">
-                                    <textarea class="form-control" id="standard_description" name="standard_description">Description of the standard</textarea>
+                                    <textarea class="form-control" id="standard_description" name="standard_description"></textarea>
                                   </div>
                                 </div>
 
@@ -122,11 +132,13 @@
 
                             <!-- SEND BUTTON -->
                             <div class="form-group row">
-                                  <label class="col-md-4 control-label" for="singlebutton">Single Button</label>
                                   <div class="col-md-4">
-                                    <button id="singlebutton" name="singlebutton" class="btn btn-primary">Button</button>
+                                    <button id="singlebutton" name="singlebutton" class="btn btn-primary">Submit</button>
                                   </div>
                                 </div>
                         </div>
                     </fieldset>
                 </form>
+{% endblock %}
+{% block footer %}
+{% endblock %}

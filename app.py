@@ -50,7 +50,7 @@ def initialise_tables(con):
     count_result = execute_query(con, count_rows_result).fetchall()[0][0]
     if count_result == 0:
         execute_query(con, test_data_result)
-        print("Standard Table data entered into empty database.")
+        print("Result Table data entered into empty database.")
 
     print("STATUS: initialise_tables() completed.")
 
@@ -91,7 +91,7 @@ def get_credits(name, query):
     else:
         left = 0
 
-    print("STATUS: get_credits completed.")
+    print("STATUS: get_credits completed for {}.".format(name))
     return [name, total, e_total, m_total, a_total, left]
 
 
@@ -148,9 +148,62 @@ def overview():
     return render_template("overview.html", standards=standards, results=credits_package, other=other_data)
 
 
-@app.route('/add-achievement')
+@app.route('/new-achievement/<error>')
+def load_add_credits(error):
+    con = create_connection(DATABASE_NAME)
+    cur = con.cursor()
+    cur.execute(get_all_standard_names)
+    asnumbers = cur.fetchall()
+    print(asnumbers)
+
+    if error == "error":
+        alert = "Warning! You chose a standard that already has been entered!"
+    elif error == "success":
+        alert = "Your entry was saved. You can find it on your Overview."
+    elif error == "enter":
+        alert = "Please remember that if your standard doesn't show up here, you'll need to enter it first!"
+    else:
+        alert = "Please remember that if your standard doesn't show up here, you'll need to enter it first!"
+
+    return render_template("enter_credits.html", as_numbers=asnumbers, alert=alert)
+
+
+@app.route('/add-credits', methods=['POST'])
 def add_credits():
-    return render_template("enter_credits.html")
+    entry_name = request.form['input_as']
+    entry_grade = request.form['input_grade']
+    print("USER INPUT: {}, {}".format(entry_name, entry_grade))
+
+    # Check if input valid.
+    con = create_connection(DATABASE_NAME)
+    cur = con.cursor()
+    cur.execute(count_rows_credit_entry, (entry_name,))
+    result = cur.fetchall()
+    result = result[0][0]
+    print("RESULT: {}".format(result))
+
+    if result < 1:
+        print("ERROR: The outcome of the result != 1 test is not 1.")
+        return redirect('/new-achievement/error')
+
+    else:
+        con = create_connection(DATABASE_NAME)
+        entry_data = (entry_name, entry_grade)
+        cur = con.cursor()
+        cur.execute(new_credit_entry_query, entry_data)
+        con.commit()
+        con.close()
+        return redirect('/new-achievement/success')
+
+
+@app.route('/enter-standard')
+def add_standard():
+    return render_template("enter_standard.html")
+
+
+@app.route('/contact')
+def contact():
+    return "Not yet here :P"
 
 
 if __name__ == "__main__":
