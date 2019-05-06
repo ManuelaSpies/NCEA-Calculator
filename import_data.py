@@ -6,10 +6,11 @@ create_table_standard = """CREATE TABLE IF NOT EXISTS standard(
                             description TEXT NOT NULL,
                             credits INTEGER NOT NULL,
                             ncea_level INTEGER NOT NULL,
-                            lit_reading INTEGER NOT NULL,
-                            lit_writing INTEGER NOT NULL,
-                            numeracy INTEGER NOT NULL,
-                            ue_credits INTEGER NOT NULL
+                            reading TEXT NOT NULL,
+                            writing TEXT NOT NULL,
+                            literacy TEXT NOT NULL,
+                            numeracy TEXT NOT NULL,
+                            ue_credits TEXT NOT NULL
                             );
                             """
 create_table_result = """CREATE TABLE IF NOT EXISTS result(
@@ -19,12 +20,12 @@ create_table_result = """CREATE TABLE IF NOT EXISTS result(
                             """
 
 # Queries to insert test data
-test_data_standard = """INSERT INTO standard (standard_id, standard_name, description,  credits, ncea_level, lit_reading, lit_writing, numeracy, ue_credits)
+test_data_standard = """INSERT INTO standard (standard_id, standard_name, description,  credits, ncea_level, reading, writing, numeracy, literacy, ue_credits)
                         VALUES (NULL, 91367,
                         'Demonstrate understanding of advanced concepts relating to managing shared information within information systems.',
-                        3, 2, False, False, False, False), 
-                        (NULL, 91215, 'Discuss a drama or theatre form or period with reference to a text.', 4, 2, False, False, False, False),
-                        (NULL, 91101, 'Produce a selection of crafted and controlled writing', 6, 2, False, True, False, True);"""
+                        3, 2, 'Yes', 'No', 'Yes', 'No', 'No'), 
+                        (NULL, 91215, 'Discuss a drama or theatre form or period with reference to a text.', 4, 2, 'Yes', 'No', 'Yes', 'Yes', 'Yes'),
+                        (NULL, 91101, 'Produce a selection of crafted and controlled writing', 6, 2, 'Yes', 'No', 'Yes', 'No', 'Yes');"""
 test_data_result = """INSERT INTO result (entry_id, as_id, grade) VALUES(NULL, 91215, 'M'), (NULL, 91367, 'E');"""
 
 # Queries to count table rows
@@ -51,13 +52,20 @@ get_credits_l1_query = """SELECT credits, grade
             ON as_id = standard_name
             AND ncea_level = 1;"""
 
-# Fetch data queries
-get_all_done_standards = """SELECT standard_id, grade, standard_name, description, credits, ncea_level, lit_reading, lit_writing, numeracy, ue_credits
+get_all_done_standards = """SELECT standard_id, grade, standard_name, description, credits, ncea_level,numeracy, literacy,  reading, writing, ue_credits
                             FROM standard JOIN result
                             on as_id = standard_name;"""
 
 get_all_standard_names = """SELECT standard_name, description
                             FROM standard;"""
+
+get_all_lit_num_things = """SELECT credits, ncea_level, reading, writing, numeracy, ue_credits
+                            FROM standard JOIN result
+                            WHERE as_id = standard_name
+                            AND (reading = 1
+                            OR writing = 1
+                            OR numeracy = 1
+                            OR ue_credits = 1);"""
 
 # Enter data queries
 new_credit_entry_query = """INSERT INTO result(entry_id, as_id, grade)

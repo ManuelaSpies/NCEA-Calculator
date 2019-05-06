@@ -62,7 +62,7 @@ def get_credits(name, query):
 
     cur.execute(query)
     entries = cur.fetchall()
-    print("Entries: ", entries)
+    print("get_credits Entries: ", entries)
     for entry in entries:
         print(entry)
 
@@ -109,6 +109,15 @@ def credits_numbers():
     return [all_credits, l3_credits, l2_credits, l1_credits]
 
 
+def get_categories(data, number):
+    outcome = 0
+    for standard in data:
+        if standard[number] == "Yes":
+            outcome += standard[0]
+
+    return outcome
+
+
 @app.route('/')
 def home():
     credits_package = credits_numbers()
@@ -142,25 +151,31 @@ def overview():
         if level[2] < 0:
             level[2] = 0
 
-    # OTHER DATA
-    other_data = [endorsement_data, ["literacy", "numeracy", "reading", "writing"]]
+    # LIT, NUM, ...
+    cur.execute(get_all_lit_num_things)
+    lit_num_data = cur.fetchall()
+
+
+    curriculum_stuff = [get_categories(lit_num_data, 1), get_categories(lit_num_data, 2), get_categories(lit_num_data, 3), get_categories(lit_num_data, 4)]
+
+    # Together bc why not
+    other_data = [endorsement_data, curriculum_stuff]
 
     return render_template("overview.html", standards=standards, results=credits_package, other=other_data)
 
 
-@app.route('/new-achievement/<error>')
-def load_add_credits(error):
+@app.route('/new-achievement/<code>')
+def load_add_credits(code):
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
     cur.execute(get_all_standard_names)
     asnumbers = cur.fetchall()
-    print(asnumbers)
 
-    if error == "error":
+    if code == "error":
         alert = "Warning! You chose a standard that already has been entered!"
-    elif error == "success":
+    elif code == "success":
         alert = "Your entry was saved. You can find it on your Overview."
-    elif error == "enter":
+    elif code == "enter":
         alert = "Please remember that if your standard doesn't show up here, you'll need to enter it first!"
     else:
         alert = "Please remember that if your standard doesn't show up here, you'll need to enter it first!"
