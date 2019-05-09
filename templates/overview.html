@@ -51,42 +51,42 @@
             <tr>
                 <th>Level 1 Credits</th>
                 <td>
-                    {{ results[1][1] }} / 80
-                    <br>{{ other[0][2][1] }} until Excellence Endorsement
-                    <br>{{ other[0][2][2] }} until Merit Endorsement
+                    {{ results[3][1] }} / 80
+                    <br>{{ endorsement[2][1] }} until Excellence Endorsement
+                    <br>{{ endorsement[2][2] }} until Merit Endorsement
                 </td>
             </tr>
             <tr>
                 <th>Level 2 Credits</th>
                 <td>
                     {{ results[2][1] }} / 60
-                    <br>{{ other[0][1][1] }} until Excellence Endorsement
-                    <br>{{ other[0][1][2] }} until Merit Endorsement
+                    <br>{{ endorsement[1][1] }} until Excellence Endorsement
+                    <br>{{ endorsement[1][2] }} until Merit Endorsement
                 </td>
             </tr>
             <tr>
                 <th>Level 3 Credits</th>
                 <td>
-                    {{ results[3][1] }} / 60
-                    <br>{{ other[0][0][1] }} until Excellence Endorsement
-                    <br>{{ other[0][0][2] }} until Merit Endorsement
+                    {{ results[1][1] }} / 60
+                    <br>{{ endorsement[0][1] }} until Excellence Endorsement
+                    <br>{{ endorsement[0][2] }} until Merit Endorsement
                 </td>
             </tr>
             <tr>
                 <th>Level 1 Literacy</th>
-                <td>XX / 60</td>
+                <td>{{ litnum[0] }} / 10</td>
             </tr>
             <tr>
                 <th>Level 1 Numeracy</th>
-                <td>XX / 60</td>
+                <td>{{ litnum[1] }} / 10</td>
             </tr>
             <tr>
                 <th>UE Literacy Reading</th>
-                <td>XX / 5</td>
+                <td>{{ litnum[2] }} / 5</td>
             </tr>
             <tr>
                 <th>UE Literacy Writing</th>
-                <td>XX / 5</td>
+                <td>{{ litnum[3] }} / 5</td>
             </tr>
         </table>
     </div>
@@ -108,7 +108,7 @@
             {% for row in standards %}
                 <tr>
                     <td>{{ row[2] }}</td>
-                    <td>{{ row[3] }}</td>
+                    <td>{{ row[3] }} ({{ row[4] }} credits)</td>
                     <td>{{ row[5] }}</td>
                     <td>{{ row[6] }}</td>
                     <td>{{ row[7] }}</td>

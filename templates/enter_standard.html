@@ -8,137 +8,115 @@
 
 {% block body %}
     <h1>Enter Your Achieved Standard</h1>
-    <form class="form-horizontal">
-                    <fieldset>
-                        <!-- NAME -->
-                        <legend>Enter Standards</legend>
-
-                        <div class="container">
-                            <div class="row">
-                                <div class="col">
-                                    <!-- AS NUMBER -->
-                                    <div class="form-group">
-                                      <label class="col-md-4 control-label" for="prependedtext">standard_asname</label>
-                                      <div class="col-md-4">
-                                        <div class="input-group">
-                                          <span class="input-group-addon">AS</span>
-                                          <input id="prependedtext" name="prependedtext" class="form-control" placeholder="912345" type="text" required="">
-                                        </div>
-
-                                      </div>
-                                    </div>
-
-                                    <!-- LEVEL -->
-                                    <div class="form-group">
-                                      <label class="col-md-4 control-label" for="standard_level">NCEA Level</label>
-                                      <div class="col-md-4">
-                                        <label class="radio-inline" for="standard_level-0">
-                                          <input type="radio" name="standard_level" id="standard_level-0" value="1" checked="checked">
-                                          1
-                                        </label>
-                                        <label class="radio-inline" for="standard_level-1">
-                                          <input type="radio" name="standard_level" id="standard_level-1" value="2">
-                                          2
-                                        </label>
-                                        <label class="radio-inline" for="standard_level-2">
-                                          <input type="radio" name="standard_level" id="standard_level-2" value="3">
-                                          3
-                                        </label>
-                                      </div>
-                                    </div>
-
-                                    <!-- CREDITS -->
-                                    <div class="form-group">
-                                      <label class="col-md-4 control-label" for="standard_credit">Credits</label>
-                                      <div class="col-md-4">
-                                        <select id="standard_credit" name="standard_credit" class="form-control">
-                                          <option value="3">3</option>
-                                          <option value="4">4</option>
-                                          <option value="5">5</option>
-                                          <option value="6">6</option>
-                                        </select>
-                                      </div>
-                                    </div>
-
-                                    <!-- DESCRIPTION -->
-                                    <div class="form-group">
-                                  <label class="col-md-4 control-label" for="standard_description">Description</label>
-                                  <div class="col-md-4">
-                                    <textarea class="form-control" id="standard_description" name="standard_description"></textarea>
-                                  </div>
-                                </div>
-
-                                    <!-- NUMERACY -->
-                                    <div class="form-group">
-                                      <label class="col-md-4 control-label" for="standard_num">Numeracy</label>
-                                      <div class="col-md-4">
-                                        <label class="radio-inline" for="standard_num-0">
-                                          <input type="radio" name="standard_num" id="standard_num-0" value="True" checked="checked">
-                                          Yes
-                                        </label>
-                                        <label class="radio-inline" for="standard_num-1">
-                                          <input type="radio" name="standard_num" id="standard_num-1" value="False">
-                                          No
-                                        </label>
-                                      </div>
-                                    </div>
-
-                                    <!-- READING -->
-                                    <div class="form-group">
-                                      <label class="col-md-4 control-label" for="standard_read">Reading</label>
-                                      <div class="col-md-4">
-                                        <label class="radio-inline" for="standard_read-0">
-                                          <input type="radio" name="standard_read" id="standard_read-0" value="True" checked="checked">
-                                          Yes
-                                        </label>
-                                        <label class="radio-inline" for="standard_read-1">
-                                          <input type="radio" name="standard_read" id="standard_read-1" value="False">
-                                          No
-                                        </label>
-                                      </div>
-                                    </div>
-
-                                    <!-- WRITING -->
-                                    <div class="form-group">
-                                      <label class="col-md-4 control-label" for="standard_writ">Writing</label>
-                                      <div class="col-md-4">
-                                        <label class="radio-inline" for="standard_writ-0">
-                                          <input type="radio" name="standard_writ" id="standard_writ-0" value="True" checked="checked">
-                                          Yes
-                                        </label>
-                                        <label class="radio-inline" for="standard_writ-1">
-                                          <input type="radio" name="standard_writ" id="standard_writ-1" value="False">
-                                          No
-                                        </label>
-                                      </div>
-                                    </div>
-
-                                    <!-- WRITING -->
-                                    <div class="form-group">
-                                      <label class="col-md-4 control-label" for="standard_ue">UE Credits</label>
-                                      <div class="col-md-4">
-                                        <label class="radio-inline" for="standard_ue-0">
-                                          <input type="radio" name="standard_ue" id="standard_ue-0" value="True" checked="checked">
-                                          Yes
-                                        </label>
-                                        <label class="radio-inline" for="standard_ue-1">
-                                          <input type="radio" name="standard_ue" id="standard_ue-1" value="False">
-                                          No
-                                        </label>
-                                      </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- SEND BUTTON -->
-                            <div class="form-group row">
-                                  <div class="col-md-4">
-                                    <button id="singlebutton" name="singlebutton" class="btn btn-primary">Submit</button>
-                                  </div>
-                                </div>
-                        </div>
-                    </fieldset>
-                </form>
+    <div class="alert alert-danger">
+        {{ alert }}
+    </div>
+    <form method="post" action="/add-standard">
+      <div class="form-group row">
+        <label for="standard_name" class="col-4 col-form-label">AS Identification Number</label>
+        <div class="col-8">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <div class="input-group-text">AS</div>
+            </div>
+            <input id="standard_name" name="standard_name" placeholder="912345" type="text" class="form-control" required="required">
+          </div>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label for="description" class="col-4 col-form-label">Description</label>
+        <div class="col-8">
+          <textarea id="description" name="description" cols="40" rows="2" class="form-control" required="required"></textarea>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label for="credits" class="col-4 col-form-label">Credits</label>
+        <div class="col-8">
+          <input id="credits" name="credits" type="text" class="form-control" aria-describedby="creditsHelpBlock" required="required">
+          <span id="creditsHelpBlock" class="form-text text-muted">Enter an integer only.</span>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label for="ncea_level" class="col-4 col-form-label">NCEA Level</label>
+        <div class="col-8">
+          <select id="ncea_level" name="ncea_level" class="custom-select" required="required">
+            <option value="1">Level 1</option>
+            <option value="2">Level 2</option>
+            <option value="3">Level 3</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-4">UE Reading</label>
+        <div class="col-8">
+          <div class="custom-control custom-radio custom-control-inline">
+            <input name="reading" id="reading_0" type="radio" class="custom-control-input" value="Yes" required="required">
+            <label for="reading_0" class="custom-control-label">Yes</label>
+          </div>
+          <div class="custom-control custom-radio custom-control-inline">
+            <input name="reading" id="reading_1" type="radio" class="custom-control-input" value="No" required="required">
+            <label for="reading_1" class="custom-control-label">No</label>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-4">UE Writing</label>
+        <div class="col-8">
+          <div class="custom-control custom-radio custom-control-inline">
+            <input name="writing" id="writing_0" type="radio" required="required" class="custom-control-input" value="Yes">
+            <label for="writing_0" class="custom-control-label">Yes</label>
+          </div>
+          <div class="custom-control custom-radio custom-control-inline">
+            <input name="writing" id="writing_1" type="radio" required="required" class="custom-control-input" value="No">
+            <label for="writing_1" class="custom-control-label">No</label>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-4">L1 Literacy</label>
+        <div class="col-8">
+          <div class="custom-control custom-radio custom-control-inline">
+            <input name="literacy" id="literacy_0" type="radio" class="custom-control-input" value="Yes" required="required">
+            <label for="literacy_0" class="custom-control-label">Yes</label>
+          </div>
+          <div class="custom-control custom-radio custom-control-inline">
+            <input name="literacy" id="literacy_1" type="radio" class="custom-control-input" value="No" required="required">
+            <label for="literacy_1" class="custom-control-label">No</label>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-4">L1 Numeracy</label>
+        <div class="col-8">
+          <div class="custom-control custom-radio custom-control-inline">
+            <input name="numeracy" id="numeracy_0" type="radio" class="custom-control-input" value="Yes" required="required">
+            <label for="numeracy_0" class="custom-control-label">Yes</label>
+          </div>
+          <div class="custom-control custom-radio custom-control-inline">
+            <input name="numeracy" id="numeracy_1" type="radio" class="custom-control-input" value="No" required="required">
+            <label for="numeracy_1" class="custom-control-label">No</label>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-4">Is the subject counting towards UE?</label>
+        <div class="col-8">
+          <div class="custom-control custom-radio custom-control-inline">
+            <input name="ue_credits" id="ue_credits_0" type="radio" class="custom-control-input" value="Yes" required="required">
+            <label for="ue_credits_0" class="custom-control-label">Yes</label>
+          </div>
+          <div class="custom-control custom-radio custom-control-inline">
+            <input name="ue_credits" id="ue_credits_1" type="radio" class="custom-control-input" value="No" required="required">
+            <label for="ue_credits_1" class="custom-control-label">No</label>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row">
+          <div class="offset-4 col-8">
+            <button name="submit" type="submit" class="btn btn-primary">Submit</button>
+        </div>
+      </div>
+    </form>
 {% endblock %}
 {% block footer %}
 {% endblock %}

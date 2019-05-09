@@ -2,10 +2,23 @@ from flask import Flask, render_template, request, redirect
 import sqlite3
 from sqlite3 import Error
 from import_data import *
+from flask_bcrypt import Bcrypt
 
 DATABASE_NAME = "credit.db"
 
 app = Flask(__name__)
+
+bcrypt = Bcrypt(app)
+app.secret_key = "コレは秘密다. Jingle bells Kuchen."
+
+
+def is_logged_in():
+    try:
+        print(session['user_id'])
+        return True
+    except KeyError:
+        print("Not logged in")
+        return False
 
 
 def create_connection(db_file):
@@ -41,6 +54,9 @@ def initialise_tables(con):
     execute_query(con, create_table_standard)
     execute_query(con, create_table_result)
 
+    con.commit()
+    con.close()
+
     # Auto inserts Values into Tables
     count_standard = execute_query(con, count_rows_standard).fetchall()[0][0]
     if count_standard == 0:
@@ -62,9 +78,9 @@ def get_credits(name, query):
 
     cur.execute(query)
     entries = cur.fetchall()
-    print("get_credits Entries: ", entries)
-    for entry in entries:
-        print(entry)
+
+    con.commit()
+    con.close()
 
     e_total = 0
     m_total = 0
@@ -125,7 +141,12 @@ def home():
     print("OUTPUT: All credits: ", credits_package)
 
     # Credit's Package: [[all [name, total, e, m, a, left, codename (all/l3/...)], l3, l2, l1]
-    return render_template("home.html", results=credits_package)
+    return render_template("home.html", results=credits_package, logged_in=is_logged_in(), session=session)
+
+
+@app.route('/contact')
+def contact():
+    return "Not yet here :P"
 
 
 @app.route('/overview')
@@ -155,13 +176,14 @@ def overview():
     cur.execute(get_all_lit_num_things)
     lit_num_data = cur.fetchall()
 
+    con.commit()
+    con.close()
 
     curriculum_stuff = [get_categories(lit_num_data, 1), get_categories(lit_num_data, 2), get_categories(lit_num_data, 3), get_categories(lit_num_data, 4)]
 
-    # Together bc why not
-    other_data = [endorsement_data, curriculum_stuff]
-
-    return render_template("overview.html", standards=standards, results=credits_package, other=other_data)
+    return render_template("overview.html",
+                           standards=standards, results=credits_package, endorsement=endorsement_data,
+                           litnum=curriculum_stuff, logged_in=is_logged_in(), session=session)
 
 
 @app.route('/new-achievement/<code>')
@@ -172,7 +194,11 @@ def load_add_credits(code):
     asnumbers = cur.fetchall()
 
     if code == "error":
-        alert = "Warning! You chose a standard that already has been entered!"
+        alert = "Warning! An error occured!"
+    elif code == "standard-exists":
+        alert = "Warning! This standard was already achieved!"
+    elif code == "standard-missing":
+        alert = "Warning! The standard doesn't exist. Something went very wrong."
     elif code == "success":
         alert = "Your entry was saved. You can find it on your Overview."
     elif code == "enter":
@@ -180,7 +206,8 @@ def load_add_credits(code):
     else:
         alert = "Please remember that if your standard doesn't show up here, you'll need to enter it first!"
 
-    return render_template("enter_credits.html", as_numbers=asnumbers, alert=alert)
+    return render_template("enter_credits.html", as_numbers=asnumbers, alert=alert,
+                           logged_in=is_logged_in(), session=session)
 
 
 @app.route('/add-credits', methods=['POST'])
@@ -193,32 +220,145 @@ def add_credits():
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
     cur.execute(count_rows_credit_entry, (entry_name,))
-    result = cur.fetchall()
-    result = result[0][0]
-    print("RESULT: {}".format(result))
 
-    if result < 1:
-        print("ERROR: The outcome of the result != 1 test is not 1.")
-        return redirect('/new-achievement/error')
+    result_standard = cur.fetchall()
+    result_standard = result_standard[0][0]
+
+    cur.execute(count_rows_new_entry, (entry_name,))
+    result_results = cur.fetchall()
+    result_results = result_results[0][0]
+
+    con.commit()
+    con.close()
+
+    if result_standard < 1:  # AND CHECK IF IT EXISTS IN RESULT!!!
+        print("ERROR: Some error with the standards on the tables.")
+        return redirect('/new-achievement/standard missing')
+
+    elif result_results >= 1:
+        print("USER: Standard already entered.")
+        return redirect('/new-achievement/standard-exists')
 
     else:
         con = create_connection(DATABASE_NAME)
         entry_data = (entry_name, entry_grade)
+
         cur = con.cursor()
         cur.execute(new_credit_entry_query, entry_data)
+
         con.commit()
         con.close()
         return redirect('/new-achievement/success')
 
 
-@app.route('/enter-standard')
+@app.route('/new-standard/<code>')
+def load_add_standard(code):
+    if code == "enter":
+        alert = "Enter a standard! :)"
+    elif code == "input-as":
+        alert = "Error! This AS Number already exists."
+    elif code == "input=int":
+        alert = "Error! An integer-only input was entered differently."
+    elif code == "Success":
+        alert = "Success! The standard was added and you can enter your grade now"
+    else:
+        alert = "Enter a standard! :)"
+    return render_template("enter_standard.html", alert=alert, logged_in=is_logged_in(), session=session)
+
+
+@app.route('/add-standard', methods=['POST'])
 def add_standard():
-    return render_template("enter_standard.html")
+    entry_as = request.form['standard_name']
+    entry_desc = request.form['description']
+    entry_cred = request.form['credits']
+    entry_lev = request.form['ncea_level']
+    entry_read = request.form['reading']
+    entry_writ = request.form['writing']
+    entry_lit = request.form['literacy']
+    entry_num = request.form['numeracy']
+    entry_ue = request.form['ue_credits']
+
+    print("USER INPUT: {}, {}, {}, {}, {}, {}, {}, {}, {}".format(entry_as, entry_desc, entry_cred, entry_lev, entry_read, entry_writ, entry_lit, entry_num, entry_ue))
+
+    # Check if input valid.
+    con = create_connection(DATABASE_NAME)
+    cur = con.cursor()
+    cur.execute(count_rows_credit_entry, (entry_as,))
+
+    result_standard = cur.fetchall()
+    result_standard = result_standard[0][0]
+
+    con.commit()
+    con.close()
+
+    if result_standard > 1:
+        print("ERROR: AS Number exists already.")
+        return redirect('/new-standard/input-as')
+
+    else:
+        print_allowed = True
+        try:
+            entry_as = int(entry_as)
+        except ValueError:
+            print("ERROR: Integer input (as number) is not written in integers.")
+            print_allowed = False
+
+        try:
+            entry_cred = int(entry_cred)
+        except ValueError:
+            print("ERROR: Integer input (credits) is not written in integers.")
+            print_allowed = False
+
+        if print_allowed:
+            con = create_connection(DATABASE_NAME)
+            entry_data = (entry_as, entry_desc, entry_cred, entry_lev, entry_read, entry_writ, entry_lit, entry_num, entry_ue)
+            cur = con.cursor()
+            cur.execute(new_standard_entry_query, entry_data)
+            con.commit()
+            con.close()
+            return redirect('/new-standard/success')
+
+        else:
+            return redirect('/new-standard/input-int')
 
 
-@app.route('/contact')
-def contact():
-    return "Not yet here :P"
+@app.route('/create-new-user', methods=['POST'])
+def create_new_user():
+    username = request.form['username'].strip().capitalize()
+    password1 = request.form['password1'].strip().capitalize()
+    password2 = request.form['password2'].strip().capitalize()
+    email = request.form['email'].strip()
+
+    if password1 != password2:
+        return redirect('/')
+
+    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+
+    con = create_connection(DATABASE_NAME)
+    user = (username, hashed_password, email)
+    cur = con.cursor()
+    cur.execute(create_user, user)
+    con.commit()
+    con.close()
+
+    return redirect('/')
+
+
+@app.route('/logout')
+def logout():
+    print(list(session.keys()))
+    [session.pop(key) for key in list(session.keys())]
+    print(list(session.keys()))
+
+    return redirect('/')
+
+
+@app.route('/settings')
+def settings_page():
+    if is_logged_in():
+        print("DO STUFF")
+    else:
+        return render_template("register.html")
 
 
 if __name__ == "__main__":
