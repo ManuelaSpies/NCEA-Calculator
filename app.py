@@ -9,7 +9,7 @@ DATABASE_NAME = "credit.db"
 app = Flask(__name__)
 
 # bcrypt = Bcrypt(app)
-# app.secret_key = "コレは秘密다. Jingle bells Kuchen."
+app.secret_key = "コレは秘密다. Jingle bells Kuchen."
 
 
 def is_logged_in():
@@ -57,6 +57,7 @@ def initialise_tables(con):
 
     # Auto inserts Values into Tables
     count_standard = execute_query(con, count_rows_standard).fetchall()[0][0]
+
     if count_standard == 0:
         execute_query(con, test_data_standard)
         print("Standard Table data entered into empty database.")
@@ -211,7 +212,9 @@ def load_add_credits(code):
 def add_credits():
     entry_name = request.form['input_as']
     entry_grade = request.form['input_grade']
-    print("USER INPUT: {}, {}".format(entry_name, entry_grade))
+    user_id = session['user_id']
+
+    print("USER INPUT: {}, {}, {}".format(entry_name, entry_grade, user_id))
 
     # Check if input valid.
     con = create_connection(DATABASE_NAME)
@@ -235,7 +238,7 @@ def add_credits():
 
     else:
         con = create_connection(DATABASE_NAME)
-        entry_data = (entry_name, entry_grade)
+        entry_data = (entry_name, entry_grade, user_id)
 
         cur = con.cursor()
         cur.execute(new_credit_entry_query, entry_data)
@@ -271,8 +274,10 @@ def add_standard():
     entry_lit = request.form['literacy']
     entry_num = request.form['numeracy']
     entry_ue = request.form['ue_credits']
+    user_id = session['user_id']
 
-    print("USER INPUT: {}, {}, {}, {}, {}, {}, {}, {}, {}".format(entry_as, entry_desc, entry_cred, entry_lev, entry_read, entry_writ, entry_lit, entry_num, entry_ue))
+    print("USER INPUT: {}, {}, {}, {}, {}, {}, {}, {}, {}, {}".format
+          (entry_as, entry_desc, entry_cred, entry_lev, entry_read, entry_writ, entry_lit, entry_num, entry_ue, user_id))
 
     # Check if input valid.
     con = create_connection(DATABASE_NAME)
@@ -302,7 +307,7 @@ def add_standard():
 
         if addition_allowed:
             con = create_connection(DATABASE_NAME)
-            entry_data = (entry_as, entry_desc, entry_cred, entry_lev, entry_read, entry_writ, entry_lit, entry_num, entry_ue)
+            entry_data = (entry_as, entry_desc, entry_cred, entry_lev, entry_read, entry_writ, entry_lit, entry_num, entry_ue, user_id)
             cur = con.cursor()
             cur.execute(new_standard_entry_query, entry_data)
             con.commit()
@@ -313,15 +318,25 @@ def add_standard():
             return redirect('/new-standard/input-int')
 
 
+@app.route('/register')
+def register():
+    return "Jingle bells"
+
+
 @app.route('/create-new-user', methods=['POST'])
 def create_new_user():
-    username = request.form['username'].strip().capitalize()
+    username = request.form['username']
     password1 = request.form['password1'].strip().capitalize()
     password2 = request.form['password2'].strip().capitalize()
     email = request.form['email'].strip()
 
     if password1 != password2:
         return redirect('/')
+
+    if " " in username:
+        return redirect('')
+
+    # CHECK IF THE USERNAME IS ALREADY EXISTING.
 
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
@@ -331,6 +346,39 @@ def create_new_user():
     cur.execute(create_user, user)
 
     return redirect('/')
+
+
+@app.route('/login', methods=['POST'])
+def login():
+    username = request.form['login-username']
+    password = request.form['login-password']
+
+    con = create_connection(DATABASE_NAME)
+    cur = con.cursor()
+    cur.execute(count_rows_username, (username,))
+    user_check = cur.fetchall()[0][0]
+
+    if user_check != 1:
+        redirect(request.referrer + "?error=username+invalid")
+
+    user_data = cur.execute(find_user, (username,)).fetchall()
+
+    try:
+        user_id = user_data[0][0]
+        username = user_data[0][1]
+        db_password = user_data[0][2]
+    except IndexError:
+        return redirect(request.referrer + "?error=Username+invalid+or+password+incorrect")
+
+    # if not bcrypt.check_password_hash(db_password, password):
+    #     return redirect(request.referrer + "?error=Email+invalid+or+password+incorrect")
+
+    if db_password != password:
+        return redirect(request.referrer + "?error=Email+invalid+or+password+incorrect")
+
+    session['user_id'] = user_id
+    session['username'] = username
+    return redirect(request.referrer)
 
 
 @app.route('/logout')

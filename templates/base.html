@@ -37,10 +37,34 @@
                         </li>
                     </ul>
                 </div>
+
+                {% if logged_in == True %}
+                    <ul class="navbar-nav ml-auto float-right">
+                        <li class="nav-item active">
+                            <a class="nav-link" href="/settings">Welcome, {{ session.username }}</a>
+                        </li>
+
+                    </ul>
+                    <a class="btn btn-outline-secondary ml-2" href="/logout">Log out</a>
+                {% else %}
+                    <form class="fp-login form-inline my-2 my-lg-0" method="post" action="/login">
+                        <input class="form-control mr-sm-2" name="login-username" id="login-username" type="text"
+                               placeholder="Username" aria-label="Username">
+                        <input class="form-control mr-sm-2" name="login-password" id="login-password" type="password"
+                               placeholder="Password" aria-label="Password">
+                        <button class="btn btn-secondary my-2 my-sm-0" type="submit">Log in</button>
+                    </form>
+                    <a class="btn btn-outline-secondary ml-2" href="/register">Sign up</a>
+                {% endif %}
+
             </div>
         </nav>
                                 <!-- CONTENT GOES HERE -->
+
         <main class="container content">
+            {% if not logged_in %}
+                <div class="alert alert-danger">You are not logged in. Any input can be changed by anyone and won't be saved.</div>
+            {% endif %}
             {% block body %}{% endblock %}
         </main>
                                 <!-- Footer -->
