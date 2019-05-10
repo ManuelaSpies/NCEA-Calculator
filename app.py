@@ -137,12 +137,15 @@ def get_categories(data, number):
 
 @app.route('/')
 def home():
-    credits_package = credits_numbers()
+    if is_logged_in():
+        credits_package = credits_numbers()
 
-    print("OUTPUT: All credits: ", credits_package)
+        print("OUTPUT: All credits: ", credits_package)
 
-    # Credit's Package: [[all [name, total, e, m, a, left, codename (all/l3/...)], l3, l2, l1]
-    return render_template("home.html", results=credits_package, logged_in=is_logged_in(), session=session)
+        # Credit's Package: [[all [name, total, e, m, a, left, codename (all/l3/...)], l3, l2, l1]
+        return render_template("home.html", results=credits_package, logged_in=is_logged_in(), session=session)
+    else:
+        return render_template("login.html")
 
 
 @app.route('/contact')
@@ -386,7 +389,6 @@ def logout():
     print(list(session.keys()))
     [session.pop(key) for key in list(session.keys())]
     print(list(session.keys()))
-
     return redirect('/')
 
 

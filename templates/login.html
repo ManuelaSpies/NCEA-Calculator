@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- Boostrap CSS package -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+        <title>Login | NCEA Calculator</title>
+    </head>
+    <body>
+                                <!-- CONTENT GOES HERE -->
+        <main class="container content">
+            <form class="centre custom-box" method="post" action="/login">
+                <legend>Login</legend>
+                <div class="form-group row">
+                    <label for="username" class="col-4 col-form-label">Username</label>
+                        <div class="col-8">
+                          <input id="login-username" name="login-username" placeholder="Username" type="text"
+                                 class="form-control" required="required">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="password" class="col-4 col-form-label">Password</label>
+                        <div class="col-8">
+                          <input id="login-password" name="login-password" placeholder="Password" type="password"
+                                 class="form-control" required="required">
+                        </div>
+                </div>
+                <div class="form-group row">
+                    <div class="offset-4 col-8">
+                      <button name="submit" type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </div>
+            </form>
+        </main>
+                                <!-- Footer -->
+        <footer>
+            <script src="{{ url_for('static', filename='js/jquery-3.3.1.min.js') }}"></script>
+            <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+            {% block footer %} {%  endblock %}
+        </footer>
+    </body>
+</html>

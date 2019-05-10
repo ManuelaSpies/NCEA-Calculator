@@ -32,6 +32,20 @@
     z-index: 0 !important;
 }
 
+.centre {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.custom-box {
+    border: 1px solid black;
+    border-radius: 25px;
+    width: 500px;
+    padding: 20px 20px 0 20px;
+}
+
 main {
 }
 
