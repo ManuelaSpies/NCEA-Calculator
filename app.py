@@ -1,15 +1,15 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, session
 import sqlite3
 from sqlite3 import Error
 from import_data import *
-from flask_bcrypt import Bcrypt
+# from flask_bcrypt import Bcrypt
 
 DATABASE_NAME = "credit.db"
 
 app = Flask(__name__)
 
-bcrypt = Bcrypt(app)
-app.secret_key = "コレは秘密다. Jingle bells Kuchen."
+# bcrypt = Bcrypt(app)
+# app.secret_key = "コレは秘密다. Jingle bells Kuchen."
 
 
 def is_logged_in():
@@ -53,9 +53,7 @@ def initialise_tables(con):
     # Creates Tables
     execute_query(con, create_table_standard)
     execute_query(con, create_table_result)
-
-    con.commit()
-    con.close()
+    execute_query(con, create_table_user)
 
     # Auto inserts Values into Tables
     count_standard = execute_query(con, count_rows_standard).fetchall()[0][0]
@@ -68,6 +66,11 @@ def initialise_tables(con):
         execute_query(con, test_data_result)
         print("Result Table data entered into empty database.")
 
+    count_user = execute_query(con, count_rows_user).fetchall()[0][0]
+    if count_user == 0:
+        execute_query(con, test_data_user)
+        print("User Table data entered into empty database.")
+
     print("STATUS: initialise_tables() completed.")
 
 
@@ -78,9 +81,6 @@ def get_credits(name, query):
 
     cur.execute(query)
     entries = cur.fetchall()
-
-    con.commit()
-    con.close()
 
     e_total = 0
     m_total = 0
@@ -176,9 +176,6 @@ def overview():
     cur.execute(get_all_lit_num_things)
     lit_num_data = cur.fetchall()
 
-    con.commit()
-    con.close()
-
     curriculum_stuff = [get_categories(lit_num_data, 1), get_categories(lit_num_data, 2), get_categories(lit_num_data, 3), get_categories(lit_num_data, 4)]
 
     return render_template("overview.html",
@@ -227,9 +224,6 @@ def add_credits():
     cur.execute(count_rows_new_entry, (entry_name,))
     result_results = cur.fetchall()
     result_results = result_results[0][0]
-
-    con.commit()
-    con.close()
 
     if result_standard < 1:  # AND CHECK IF IT EXISTS IN RESULT!!!
         print("ERROR: Some error with the standards on the tables.")
@@ -288,28 +282,25 @@ def add_standard():
     result_standard = cur.fetchall()
     result_standard = result_standard[0][0]
 
-    con.commit()
-    con.close()
-
     if result_standard > 1:
         print("ERROR: AS Number exists already.")
         return redirect('/new-standard/input-as')
 
     else:
-        print_allowed = True
+        addition_allowed = True
         try:
             entry_as = int(entry_as)
         except ValueError:
-            print("ERROR: Integer input (as number) is not written in integers.")
-            print_allowed = False
+            print("ERROR: Integer input (AS number) is not written in integers.")
+            addition_allowed = False
 
         try:
             entry_cred = int(entry_cred)
         except ValueError:
             print("ERROR: Integer input (credits) is not written in integers.")
-            print_allowed = False
+            addition_allowed = False
 
-        if print_allowed:
+        if addition_allowed:
             con = create_connection(DATABASE_NAME)
             entry_data = (entry_as, entry_desc, entry_cred, entry_lev, entry_read, entry_writ, entry_lit, entry_num, entry_ue)
             cur = con.cursor()
@@ -338,8 +329,6 @@ def create_new_user():
     user = (username, hashed_password, email)
     cur = con.cursor()
     cur.execute(create_user, user)
-    con.commit()
-    con.close()
 
     return redirect('/')
 
