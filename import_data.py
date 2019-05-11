@@ -50,38 +50,49 @@ test_data_user = """INSERT INTO user (user_id, username, password)
 count_rows_standard = """SELECT COUNT(*) FROM standard;"""
 count_rows_result = """SELECT COUNT(*) FROM result;"""
 count_rows_user = """SELECT COUNT(*) FROM user;"""
+count_rows_standard_user = """SELECT COUNT(*) FROM standard 
+                              WHERE standard_user = ?;"""
 
 count_rows_credit_entry = """SELECT COUNT(*)
                         FROM standard
-                        WHERE standard_name = ?;"""
+                        WHERE standard_name = ?
+                        AND standard_user = ?;"""
 count_rows_new_entry = """SELECT COUNT(*)
                           FROM result
-                          WHERE as_id = ?;"""
-count_rows_username = """SELECT COUNT(*) FROM user WHERE username = ?"""
+                          WHERE as_id = ?
+                          AND result_user = ?;"""
+count_rows_username = """SELECT COUNT(*) FROM user 
+                          WHERE username = ?"""
 
 # Get Credits queries
 get_credits_all_query = """SELECT credits, grade
             FROM result JOIN standard
-            ON as_id = standard_name;"""
+            ON as_id = standard_name
+            WHERE result_user = ?;"""
 get_credits_l3_query = """SELECT credits, grade
             FROM result JOIN standard
             ON as_id = standard_name
-            AND ncea_level = 3;"""
+            AND ncea_level = 3
+            AND result_user = ?;"""
 get_credits_12_query = """SELECT credits, grade
             FROM result JOIN standard
             ON as_id = standard_name
-            AND ncea_level = 2;"""
+            AND ncea_level = 2
+            AND result_user = ?;"""
 get_credits_l1_query = """SELECT credits, grade
             FROM result JOIN standard
             ON as_id = standard_name
-            AND ncea_level = 1;"""
+            AND ncea_level = 1
+            AND result_user = ?;"""
 
 get_all_done_standards = """SELECT standard_id, grade, standard_name, description, credits, ncea_level,numeracy, literacy,  reading, writing, ue_credits
                             FROM standard JOIN result
-                            on as_id = standard_name;"""
+                            on as_id = standard_name
+                            AND standard_user = ?;"""
 
 get_all_standard_names = """SELECT standard_name, description
-                            FROM standard;"""
+                            FROM standard
+                            WHERE standard_user = ?;"""
 
 get_all_lit_num_things = """SELECT credits, literacy, numeracy, reading, writing
                             FROM standard JOIN result
@@ -89,13 +100,15 @@ get_all_lit_num_things = """SELECT credits, literacy, numeracy, reading, writing
                             AND (reading = "Yes"
                             OR writing = "Yes"
                             OR numeracy = "Yes"
-                            OR literacy = "Yes");"""
+                            OR literacy = "Yes")
+                            AND standard_user = ?;"""
 
 # Enter data queries
 new_credit_entry_query = """INSERT INTO result(entry_id, as_id, grade, result_user)
                             VALUES(NULL, ?, ?, ?);"""
-new_standard_entry_query = """INSERT INTO standard(standard_id, standard_name, description, credits, ncea_level, reading, writing, literacy, numeracy, ue_credits, standard_user)
-                                VALUES(NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
+new_standard_entry_query = """INSERT INTO standard(standard_id, standard_name, description, credits, ncea_level, 
+                              reading, writing, literacy, numeracy, ue_credits, standard_user)
+                              VALUES(NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
 
 # User Related Queries
 create_user = """"INSERT INTO user(user_id, username, password)

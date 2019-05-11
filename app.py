@@ -14,7 +14,7 @@ app.secret_key = "コレは秘密다. Jingle bells Kuchen."
 
 def is_logged_in():
     try:
-        print(session['user_id'])
+        print("Session:", session)
         return True
     except KeyError:
         print("Not logged in")
@@ -80,7 +80,7 @@ def get_credits(name, query):
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
 
-    cur.execute(query)
+    cur.execute(query, (session['user_id'],))
     entries = cur.fetchall()
 
     e_total = 0
@@ -140,10 +140,9 @@ def home():
     if is_logged_in():
         credits_package = credits_numbers()
 
-        print("OUTPUT: All credits: ", credits_package)
-
         # Credit's Package: [[all [name, total, e, m, a, left, codename (all/l3/...)], l3, l2, l1]
         return render_template("home.html", results=credits_package, logged_in=is_logged_in(), session=session)
+
     else:
         return render_template("login.html")
 
@@ -159,7 +158,7 @@ def overview():
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
 
-    cur.execute(get_all_done_standards)
+    cur.execute(get_all_done_standards, (session['user_id'],))
     standards = cur.fetchall()
 
     # LIST OF ALL CREDITS BY GRADE / LEVEL
@@ -167,8 +166,8 @@ def overview():
 
     # LEVEL ENDORSEMENT ["level", To E Endorsement, To M Endorsement]
     endorsement_data = [["l3", 50-credits_package[1][2], 50-credits_package[1][3]-credits_package[1][2]],
-                        ["l2", 50-credits_package[2][2], 50-credits_package[2][3]-credits_package[1][2]],
-                        ["l1", 50-credits_package[3][2], 50-credits_package[3][3]-credits_package[1][2]]]
+                        ["l2", 50-credits_package[2][2], 50-credits_package[2][3]-credits_package[2][2]],
+                        ["l1", 50-credits_package[3][2], 50-credits_package[3][3]-credits_package[3][2]]]
 
     for level in endorsement_data:
         if level[1] < 0:
@@ -177,10 +176,13 @@ def overview():
             level[2] = 0
 
     # LIT, NUM, ...
-    cur.execute(get_all_lit_num_things)
+    cur.execute(get_all_lit_num_things, (session['user_id'],))
     lit_num_data = cur.fetchall()
 
     curriculum_stuff = [get_categories(lit_num_data, 1), get_categories(lit_num_data, 2), get_categories(lit_num_data, 3), get_categories(lit_num_data, 4)]
+
+    print("Endorsement Data:")
+    print(endorsement_data)
 
     return render_template("overview.html",
                            standards=standards, results=credits_package, endorsement=endorsement_data,
@@ -191,24 +193,31 @@ def overview():
 def load_add_credits(code):
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
-    cur.execute(get_all_standard_names)
-    asnumbers = cur.fetchall()
 
-    if code == "error":
-        alert = "Warning! An error occured!"
-    elif code == "standard-exists":
-        alert = "Warning! This standard was already achieved!"
-    elif code == "standard-missing":
-        alert = "Warning! The standard doesn't exist. Something went very wrong."
-    elif code == "success":
-        alert = "Your entry was saved. You can find it on your Overview."
-    elif code == "enter":
-        alert = "Please remember that if your standard doesn't show up here, you'll need to enter it first!"
+    standards_exist = cur.execute(count_rows_standard_user, (session['user_id'],)).fetchall()[0][0] > 0
+
+    if standards_exist:
+        cur.execute(get_all_standard_names, (session['user_id'],))
+        asnumbers = cur.fetchall()
+
+        if code == "error":
+            alert = "Warning! An error occured!"
+        elif code == "standard-exists":
+            alert = "Warning! This standard was already achieved!"
+        elif code == "standard-missing":
+            alert = "Warning! The standard doesn't exist. Something went very wrong."
+        elif code == "success":
+            alert = "Your entry was saved. You can find it on your Overview."
+        elif code == "enter":
+            alert = "Please remember that if your standard doesn't show up here, you'll need to enter it first!"
+        else:
+            alert = "Please remember that if your standard doesn't show up here, you'll need to enter it first!"
+
+        return render_template("enter_credits.html", as_numbers=asnumbers, alert=alert,
+                               logged_in=is_logged_in(), session=session)
     else:
-        alert = "Please remember that if your standard doesn't show up here, you'll need to enter it first!"
-
-    return render_template("enter_credits.html", as_numbers=asnumbers, alert=alert,
-                           logged_in=is_logged_in(), session=session)
+        print("ERROR: User has no standards; redirected towards enter standards page.")
+        return redirect('/new-standard/no-standards')
 
 
 @app.route('/add-credits', methods=['POST'])
@@ -222,12 +231,12 @@ def add_credits():
     # Check if input valid.
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
-    cur.execute(count_rows_credit_entry, (entry_name,))
+    cur.execute(count_rows_credit_entry, (entry_name, user_id,))
 
     result_standard = cur.fetchall()
     result_standard = result_standard[0][0]
 
-    cur.execute(count_rows_new_entry, (entry_name,))
+    cur.execute(count_rows_new_entry, (entry_name, user_id))
     result_results = cur.fetchall()
     result_results = result_results[0][0]
 
@@ -261,6 +270,8 @@ def load_add_standard(code):
         alert = "Error! An integer-only input was entered differently."
     elif code == "Success":
         alert = "Success! The standard was added and you can enter your grade now"
+    elif code == "no-standard":
+        alert = "Error! You don't have any standards. Enter them first before adding your credits."
     else:
         alert = "Enter a standard! :)"
     return render_template("enter_standard.html", alert=alert, logged_in=is_logged_in(), session=session)
@@ -285,7 +296,7 @@ def add_standard():
     # Check if input valid.
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
-    cur.execute(count_rows_credit_entry, (entry_as,))
+    cur.execute(count_rows_credit_entry, (entry_as, user_id, ))
 
     result_standard = cur.fetchall()
     result_standard = result_standard[0][0]
@@ -395,7 +406,7 @@ def logout():
 @app.route('/settings')
 def settings_page():
     if is_logged_in():
-        print("DO STUFF")
+        return "DO STUFF jingle bells"
     else:
         return render_template("register.html")
 
