@@ -26,7 +26,7 @@ create_table_result = """CREATE TABLE IF NOT EXISTS result(
                             """
 
 create_table_user = """CREATE TABLE IF NOT EXISTS user(
-                        user_id integer PRIMARY KEY AUTOINCREMENT UNIQUE,
+                        user_id integer PRIMARY KEY UNIQUE AUTOINCREMENT,
                         username text UNIQUE NOT NULL,
                         password text NOT NULL
                         );"""
@@ -42,7 +42,7 @@ test_data_standard = """INSERT INTO standard (standard_id, standard_name, descri
                         (NULL, 91101, 'Produce a selection of crafted and controlled writing', 
                         6, 2, 'Yes', 'No', 'Yes', 'No', 'Yes', 1);"""
 test_data_result = """INSERT INTO result (entry_id, as_id, grade, result_user) 
-                        VALUES(NULL, 91215, 'M'), (NULL, 91367, 'E', 1);"""
+                        VALUES(NULL, 91215, 'M', 1), (NULL, 91367, 'E', 1);"""
 test_data_user = """INSERT INTO user (user_id, username, password)
                     VALUES (NULL, 'testuser1', 'test1'), (NULL, 'testuser2', 'test2');"""
 
@@ -111,8 +111,8 @@ new_standard_entry_query = """INSERT INTO standard(standard_id, standard_name, d
                               VALUES(NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
 
 # User Related Queries
-create_user = """"INSERT INTO user(user_id, username, password)
-                VALUES(NULL,?,?,?,?,?,?,?,?);"""
+create_user = """INSERT INTO user(user_id, username, password)
+                VALUES(NULL,?,?);"""
 find_user = """SELECT user_id, username, password
                 FROM user
                 WHERE username = ?;"""

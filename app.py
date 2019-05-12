@@ -9,13 +9,16 @@ DATABASE_NAME = "credit.db"
 app = Flask(__name__)
 
 # bcrypt = Bcrypt(app)
+
 app.secret_key = "コレは秘密다. Jingle bells Kuchen."
 
 
 def is_logged_in():
+    # initialise_tables(create_connection(DATABASE_NAME))
+
     try:
-        print("Session:", session)
-        return True
+        print("Session:", session['username'])
+        return session['user_id'] != ""
     except KeyError:
         print("Not logged in")
         return False
@@ -54,23 +57,6 @@ def initialise_tables(con):
     execute_query(con, create_table_standard)
     execute_query(con, create_table_result)
     execute_query(con, create_table_user)
-
-    # Auto inserts Values into Tables
-    count_standard = execute_query(con, count_rows_standard).fetchall()[0][0]
-
-    if count_standard == 0:
-        execute_query(con, test_data_standard)
-        print("Standard Table data entered into empty database.")
-
-    count_result = execute_query(con, count_rows_result).fetchall()[0][0]
-    if count_result == 0:
-        execute_query(con, test_data_result)
-        print("Result Table data entered into empty database.")
-
-    count_user = execute_query(con, count_rows_user).fetchall()[0][0]
-    if count_user == 0:
-        execute_query(con, test_data_user)
-        print("User Table data entered into empty database.")
 
     print("STATUS: initialise_tables() completed.")
 
@@ -136,15 +122,27 @@ def get_categories(data, number):
 
 
 @app.route('/')
-def home():
+def main():
     if is_logged_in():
         credits_package = credits_numbers()
-
         # Credit's Package: [[all [name, total, e, m, a, left, codename (all/l3/...)], l3, l2, l1]
         return render_template("home.html", results=credits_package, logged_in=is_logged_in(), session=session)
 
     else:
-        return render_template("login.html")
+        return redirect('/login/user')
+
+
+@app.route('/login/<message>')
+def login_page(message):
+    if message == "user":
+        message = False
+    elif message == "account":
+        message = "Something is wrong with your account. Please contact the server operator."
+    elif message == "incorrect":
+        message = "The username or password is incorrect."
+    else:
+        message = False
+    return render_template("login.html", message=message)
 
 
 @app.route('/contact')
@@ -180,9 +178,6 @@ def overview():
     lit_num_data = cur.fetchall()
 
     curriculum_stuff = [get_categories(lit_num_data, 1), get_categories(lit_num_data, 2), get_categories(lit_num_data, 3), get_categories(lit_num_data, 4)]
-
-    print("Endorsement Data:")
-    print(endorsement_data)
 
     return render_template("overview.html",
                            standards=standards, results=credits_package, endorsement=endorsement_data,
@@ -266,9 +261,9 @@ def load_add_standard(code):
         alert = "Enter a standard! :)"
     elif code == "input-as":
         alert = "Error! This AS Number already exists."
-    elif code == "input=int":
+    elif code == "input-int":
         alert = "Error! An integer-only input was entered differently."
-    elif code == "Success":
+    elif code == "success":
         alert = "Success! The standard was added and you can enter your grade now"
     elif code == "no-standard":
         alert = "Error! You don't have any standards. Enter them first before adding your credits."
@@ -301,7 +296,7 @@ def add_standard():
     result_standard = cur.fetchall()
     result_standard = result_standard[0][0]
 
-    if result_standard > 1:
+    if result_standard > 0:
         print("ERROR: AS Number exists already.")
         return redirect('/new-standard/input-as')
 
@@ -326,15 +321,27 @@ def add_standard():
             cur.execute(new_standard_entry_query, entry_data)
             con.commit()
             con.close()
+            print('STATEMENT: Input added successfully.')
             return redirect('/new-standard/success')
 
         else:
             return redirect('/new-standard/input-int')
 
 
-@app.route('/register')
-def register():
-    return "Jingle bells"
+@app.route('/register/<error>')
+def register(error):
+    if error == "new":
+        message = False
+    elif error == "password":
+        message = "Your passwords aren't matching."
+    elif error == "space":
+        message = "There is a space in your username!"
+    elif error == "username":
+        message = "This username is already taken. Try another one."
+    else:
+        message = "Something went wrong."
+
+    return render_template("register.html", error_message=message, logged_in=is_logged_in(), session=session)
 
 
 @app.route('/create-new-user', methods=['POST'])
@@ -342,22 +349,23 @@ def create_new_user():
     username = request.form['username']
     password1 = request.form['password1'].strip().capitalize()
     password2 = request.form['password2'].strip().capitalize()
-    email = request.form['email'].strip()
 
     if password1 != password2:
-        return redirect('/')
+        return redirect('register/password')
 
     if " " in username:
-        return redirect('')
-
-    # CHECK IF THE USERNAME IS ALREADY EXISTING.
-
-    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+        return redirect('/register/space')
 
     con = create_connection(DATABASE_NAME)
-    user = (username, hashed_password, email)
+
+    # hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+    hashed_password = password1
     cur = con.cursor()
-    cur.execute(create_user, user)
+    cur.execute(create_user, (username, hashed_password, ))
+    print("NEW USER: {}".format(username))
+
+    user_id = cur.execute(find_user, (username,)).fetchall()[0]
+    print(user_id)
 
     return redirect('/')
 
@@ -373,7 +381,7 @@ def login():
     user_check = cur.fetchall()[0][0]
 
     if user_check != 1:
-        redirect(request.referrer + "?error=username+invalid")
+        redirect('/login/account')
 
     user_data = cur.execute(find_user, (username,)).fetchall()
 
@@ -382,21 +390,22 @@ def login():
         username = user_data[0][1]
         db_password = user_data[0][2]
     except IndexError:
-        return redirect(request.referrer + "?error=Username+invalid+or+password+incorrect")
+        return redirect('/login/account')
 
     # if not bcrypt.check_password_hash(db_password, password):
     #     return redirect(request.referrer + "?error=Email+invalid+or+password+incorrect")
 
     if db_password != password:
-        return redirect(request.referrer + "?error=Email+invalid+or+password+incorrect")
+        return redirect('/login/incorrect')
 
     session['user_id'] = user_id
     session['username'] = username
-    return redirect(request.referrer)
+    return redirect('/')
 
 
 @app.route('/logout')
 def logout():
+    print("LOGGING OUT.")
     print(list(session.keys()))
     [session.pop(key) for key in list(session.keys())]
     print(list(session.keys()))
