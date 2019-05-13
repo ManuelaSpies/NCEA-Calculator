@@ -198,9 +198,9 @@ def load_add_credits(code):
         if code == "error":
             alert = "Warning! An error occured!"
         elif code == "standard-exists":
-            alert = "Warning! This standard was already achieved!"
+            alert = "Error! This standard was already achieved!"
         elif code == "standard-missing":
-            alert = "Warning! The standard doesn't exist. Something went very wrong."
+            alert = "Warning! The standard doesn't exist. Did you enter it?"
         elif code == "success":
             alert = "Your entry was saved. You can find it on your Overview."
         elif code == "enter":
@@ -359,15 +359,24 @@ def create_new_user():
     # hashed_password = bcrypt.generate_password_hash(password1).decode('utf-8')
     hashed_password = password1
 
+    query = """INSERT INTO user(user_id, username, password) 
+                VALUES (NULL,?,?);"""
+    new_user = (username, hashed_password)
+
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
 
-    new_user = [username, hashed_password]
-
+    # Catches user name already exists errors.
     try:
-        cur.execute(create_user, new_user)
+        cur.execute(query, new_user)
     except sqlite3.IntegrityError:
         return redirect('/register/username')
+
+    con.commit()
+    con.close()
+
+    con = create_connection(DATABASE_NAME)
+    cur = con.cursor()
 
     user_data = cur.execute(find_user, (username,)).fetchall()[0]
     print("NEW USER: {}".format(user_data))
@@ -375,6 +384,7 @@ def create_new_user():
     user_id = user_data[0]
     session['user_id'] = user_id
     session['username'] = username
+    print(user_id)
 
     return redirect('/')
 
