@@ -42,8 +42,19 @@
 .custom-box {
     border: 1px solid black;
     border-radius: 25px;
-    width: 500px;
     padding: 20px 20px 0 20px;
+}
+
+@media (max-width: 480px) {
+    .custom-box {
+        min-width: 90%;
+    }
+                     }
+
+@media (min-width: 768px) {
+    .custom-box {
+        width: 40%;
+    }
 }
 
 main {

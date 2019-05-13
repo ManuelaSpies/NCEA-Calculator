@@ -10,7 +10,7 @@ app = Flask(__name__)
 
 # bcrypt = Bcrypt(app)
 
-app.secret_key = "コレは秘密다. Jingle bells Kuchen."
+app.secret_key = "コレは秘密다. Jingle bells Käsekuchen. 4729371927"
 
 
 def is_logged_in():
@@ -54,9 +54,9 @@ def execute_query(con, query):
 def initialise_tables(con):
     """creates tables and enters initial values."""
     # Creates Tables
+    execute_query(con, create_table_user)
     execute_query(con, create_table_standard)
     execute_query(con, create_table_result)
-    execute_query(con, create_table_user)
 
     print("STATUS: initialise_tables() completed.")
 
@@ -235,7 +235,7 @@ def add_credits():
     result_results = cur.fetchall()
     result_results = result_results[0][0]
 
-    if result_standard < 1:  # AND CHECK IF IT EXISTS IN RESULT!!!
+    if result_standard < 1:
         print("ERROR: Some error with the standards on the tables.")
         return redirect('/new-achievement/standard missing')
 
@@ -356,16 +356,25 @@ def create_new_user():
     if " " in username:
         return redirect('/register/space')
 
-    con = create_connection(DATABASE_NAME)
-
-    # hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+    # hashed_password = bcrypt.generate_password_hash(password1).decode('utf-8')
     hashed_password = password1
-    cur = con.cursor()
-    cur.execute(create_user, (username, hashed_password, ))
-    print("NEW USER: {}".format(username))
 
-    user_id = cur.execute(find_user, (username,)).fetchall()[0]
-    print(user_id)
+    con = create_connection(DATABASE_NAME)
+    cur = con.cursor()
+
+    new_user = [username, hashed_password]
+
+    try:
+        cur.execute(create_user, new_user)
+    except sqlite3.IntegrityError:
+        return redirect('/register/username')
+
+    user_data = cur.execute(find_user, (username,)).fetchall()[0]
+    print("NEW USER: {}".format(user_data))
+
+    user_id = user_data[0]
+    session['user_id'] = user_id
+    session['username'] = username
 
     return redirect('/')
 
@@ -406,9 +415,9 @@ def login():
 @app.route('/logout')
 def logout():
     print("LOGGING OUT.")
-    print(list(session.keys()))
+    # print(list(session.keys()))
     [session.pop(key) for key in list(session.keys())]
-    print(list(session.keys()))
+    # print(list(session.keys()))
     return redirect('/')
 
 

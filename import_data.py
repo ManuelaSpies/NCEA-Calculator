@@ -26,7 +26,7 @@ create_table_result = """CREATE TABLE IF NOT EXISTS result(
                             """
 
 create_table_user = """CREATE TABLE IF NOT EXISTS user(
-                        user_id integer PRIMARY KEY UNIQUE AUTOINCREMENT,
+                        user_id integer PRIMARY KEY AUTOINCREMENT,
                         username text UNIQUE NOT NULL,
                         password text NOT NULL
                         );"""
@@ -112,7 +112,7 @@ new_standard_entry_query = """INSERT INTO standard(standard_id, standard_name, d
 
 # User Related Queries
 create_user = """INSERT INTO user(user_id, username, password)
-                VALUES(NULL,?,?);"""
+                 VALUES(NULL, ?, ?);"""
 find_user = """SELECT user_id, username, password
                 FROM user
                 WHERE username = ?;"""
