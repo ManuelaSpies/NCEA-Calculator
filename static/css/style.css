@@ -13,7 +13,7 @@
 
 .piechart_block {
     margin: 0 auto;
-    padding: 0 auto;
+    padding: 0;
     width: 100%;
 }
 
@@ -37,6 +37,10 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+}
+
+.centre-horizontal {
+    margin: 0 auto;
 }
 
 .custom-box {

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- Boostrap CSS package -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+        <title>Contact | NCEA Calculator</title>
+    </head>
+    <body>
+                                <!-- CONTENT GOES HERE -->
+        <main class="container content">
+            <div class="centre-horizontal btn btn-info">Return</div>
+            <div class="centre custom-box">
+                <h1 id="contact">Contact</h1>
+                <p>Thank you very much for using this calculator. To contact the [] of this app, email
+                    <a href="mailto:spiesma@wgc.school.nz">spiesma@wgc.school.nz</a>.</p>
+                <h1 id="copyright">Copyright</h1>
+                <p>This website is not affiliated with NZQA, the New Zealand government or anything else. It's just
+                    a student project for a Digital Technologies internal and nothing official.</p>
+            </div>
+        </main>
+                                <!-- Footer -->
+        <footer class="text-muted container">
+            <hr>
+            <p class="text-muted">&copy; Manuela Spies
+            <br><a href="/contact">Contact</a></p>
+            <script src="{{ url_for('static', filename='js/jquery-3.3.1.min.js') }}"></script>
+            <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+            {% block footer %} {%  endblock %}
+        </footer>
+    </body>
+</html>

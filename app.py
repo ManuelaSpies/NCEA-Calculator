@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, session
 import sqlite3
 from sqlite3 import Error
 from import_data import *
-# from flask_bcrypt import Bcrypt
+from flask_bcrypt import Bcrypt
 
 DATABASE_NAME = "credit.db"
 
@@ -147,7 +147,7 @@ def login_page(message):
 
 @app.route('/contact')
 def contact():
-    return "Not yet here :P"
+    return render_template("contact.html")
 
 
 @app.route('/overview')
@@ -358,9 +358,6 @@ def create_new_user():
 
     # hashed_password = bcrypt.generate_password_hash(password1).decode('utf-8')
     hashed_password = password1
-
-    query = """INSERT INTO user(user_id, username, password) 
-                VALUES (NULL,?,?);"""
     new_user = (username, hashed_password)
 
     con = create_connection(DATABASE_NAME)
@@ -368,7 +365,7 @@ def create_new_user():
 
     # Catches user name already exists errors.
     try:
-        cur.execute(query, new_user)
+        cur.execute(create_user, new_user)
     except sqlite3.IntegrityError:
         return redirect('/register/username')
 
