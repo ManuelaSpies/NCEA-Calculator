@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, session
 import sqlite3
 from sqlite3 import Error
 from import_data import *
-from flask_bcrypt import Bcrypt
+# from flask_bcrypt import Bcrypt
 
 DATABASE_NAME = "credit.db"
 
@@ -197,19 +197,25 @@ def load_add_credits(code):
 
         if code == "error":
             alert = "Warning! An error occured!"
+            colour = "alert-danger"
         elif code == "standard-exists":
-            alert = "Error! This standard was already achieved!"
+            alert = "Error! This standard was already achieved! Nothing was processed."
+            colour = "alert-warning"
         elif code == "standard-missing":
             alert = "Warning! The standard doesn't exist. Did you enter it?"
+            colour = "alert-warning"
         elif code == "success":
             alert = "Your entry was saved. You can find it on your Overview."
+            colour = "alert-success"
         elif code == "enter":
             alert = "Please remember that if your standard doesn't show up here, you'll need to enter it first!"
+            colour = "alert-light"
         else:
             alert = "Please remember that if your standard doesn't show up here, you'll need to enter it first!"
+            colour = "alert-light"
 
         return render_template("enter_credits.html", as_numbers=asnumbers, alert=alert,
-                               logged_in=is_logged_in(), session=session)
+                               logged_in=is_logged_in(), session=session, colour=colour)
     else:
         print("ERROR: User has no standards; redirected towards enter standards page.")
         return redirect('/new-standard/no-standards')
@@ -259,17 +265,22 @@ def add_credits():
 def load_add_standard(code):
     if code == "enter":
         alert = "Enter a standard! :)"
+        colour = "alert-light"
     elif code == "input-as":
-        alert = "Error! This AS Number already exists."
+        alert = "Error! This AS Number already exists. Nothing was processed."
+        colour = "alert-warning"
     elif code == "input-int":
-        alert = "Error! An integer-only input was entered differently."
+        alert = "Error! An integer-only input was entered in another form. Nothing was processed."
+        colour = "alert-danger"
     elif code == "success":
-        alert = "Success! The standard was added and you can enter your grade now"
+        alert = "Success! The standard was added and you can enter your grade now!"
+        colour = "alert-success"
     elif code == "no-standard":
         alert = "Error! You don't have any standards. Enter them first before adding your credits."
+        colour = "alert-warning"
     else:
         alert = "Enter a standard! :)"
-    return render_template("enter_standard.html", alert=alert, logged_in=is_logged_in(), session=session)
+    return render_template("enter_standard.html", alert=alert, logged_in=is_logged_in(), session=session, colour=colour)
 
 
 @app.route('/add-standard', methods=['POST'])
