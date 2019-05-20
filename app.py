@@ -136,13 +136,17 @@ def main():
 def login_page(message):
     if message == "user":
         message = False
+        colour = "alert-light"
     elif message == "account":
         message = "Something is wrong with your account. Please contact the server operator."
+        colour = "alert-danger"
     elif message == "incorrect":
         message = "The username or password is incorrect."
+        colour = "alert-warning"
     else:
         message = False
-    return render_template("login.html", message=message)
+        colour = "alert-light"
+    return render_template("login.html", message=message, colour=colour)
 
 
 @app.route('/contact')
@@ -343,16 +347,21 @@ def add_standard():
 def register(error):
     if error == "new":
         message = False
+        colour = "alert-light"
     elif error == "password":
         message = "Your passwords aren't matching."
+        colour = "alert-warning"
     elif error == "space":
         message = "There is a space in your username!"
+        colour = "alert-warning"
     elif error == "username":
         message = "This username is already taken. Try another one."
+        colour = "alert-danger"
     else:
-        message = "Something went wrong."
+        message = "Something went wrong. Contact the site administrator if this problem remains."
+        colour = "alert-danger"
 
-    return render_template("register.html", error_message=message, logged_in=is_logged_in(), session=session)
+    return render_template("register.html", error_message=message, logged_in=is_logged_in(), session=session, colour=colour)
 
 
 @app.route('/create-new-user', methods=['POST'])

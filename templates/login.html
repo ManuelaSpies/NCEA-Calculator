@@ -16,7 +16,7 @@
             <form class="centre custom-box" method="post" action="/login">
                 <h1>Login</h1>
                 {% if message != False %}
-                    <div class="alert alert-danger">{{ message }}</div>
+                    <div class="alert {{ colour }}">{{ message }}</div>
                 {% endif %}
                 <div class="form-group row">
                     <label class="col-4 col-form-label">Username</label>
