@@ -138,7 +138,7 @@ def login_page(message):
         message = False
         colour = "alert-light"
     elif message == "account":
-        message = "Something is wrong with your account. Please contact the server operator."
+        message = "Something is wrong with your account. Please contact the server operator if the problem persists."
         colour = "alert-danger"
     elif message == "incorrect":
         message = "The username or password is incorrect."
@@ -151,7 +151,12 @@ def login_page(message):
 
 @app.route('/contact')
 def contact():
-    return render_template("contact.html")
+    return render_template("contact.html", session=session)
+
+
+@app.route('/gallery')
+def gallery():
+    return render_template("gallery.html", session=session)
 
 
 @app.route('/overview')

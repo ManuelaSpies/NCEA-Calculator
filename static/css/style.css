@@ -65,15 +65,15 @@
     }
 }
 
-main {
-}
-
-/*.piechart_block rect,.piechart_block svg{*/
-    /*width: 100%;*/
-/*}*/
-
-/* DESIGN */
-
 h1 {
     border-bottom: 1px;
+}
+
+.custom-carousel-item {
+    border-radius: 25px;
+    margin-bottom: 3px;
+}
+
+#custom {
+    margin-bottom: 3px;
 }
