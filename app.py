@@ -156,6 +156,9 @@ def contact():
 
 @app.route('/overview')
 def overview():
+    if not is_logged_in():
+        return redirect('/login/account')
+
     # LIST OF ALL COMPLETED STANDARDS
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
@@ -190,6 +193,9 @@ def overview():
 
 @app.route('/new-achievement/<code>')
 def load_add_credits(code):
+    if not is_logged_in():
+        return redirect('/login/account')
+
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
 
@@ -227,6 +233,9 @@ def load_add_credits(code):
 
 @app.route('/add-credits', methods=['POST'])
 def add_credits():
+    if not is_logged_in():
+        return redirect('/login/account')
+
     entry_name = request.form['input_as']
     entry_grade = request.form['input_grade']
     user_id = session['user_id']
@@ -267,6 +276,9 @@ def add_credits():
 
 @app.route('/new-standard/<code>')
 def load_add_standard(code):
+    if not is_logged_in():
+        return redirect('/login/account')
+
     if code == "enter":
         alert = "Enter a standard! :)"
         colour = "alert-light"
@@ -289,6 +301,9 @@ def load_add_standard(code):
 
 @app.route('/add-standard', methods=['POST'])
 def add_standard():
+    if not is_logged_in():
+        return redirect('/login/account')
+
     entry_as = request.form['standard_name']
     entry_desc = request.form['description']
     entry_cred = request.form['credits']
@@ -441,6 +456,9 @@ def login():
 
 @app.route('/logout')
 def logout():
+    if not is_logged_in():
+        return redirect('/login/user')
+
     print("LOGGING OUT.")
     # print(list(session.keys()))
     [session.pop(key) for key in list(session.keys())]
@@ -451,7 +469,7 @@ def logout():
 @app.route('/settings')
 def settings_page():
     if is_logged_in():
-        return "DO STUFF jingle bells"
+        return "This page does not yet exist. How did you get here?"
     else:
         return render_template("register.html")
 
