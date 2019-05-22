@@ -11,6 +11,31 @@
         <title>Register | NCEA Calculator</title>
     </head>
     <body>
+        <nav class="navbar navbar-expand-md navbar-dark bg-dark custom-nav">
+            <div class="container">
+                <a class="navbar-brand" href="/">Credit Calculator</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#cc-navbar" aria-controls="cc-navbar" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="cc-navbar">
+                    <ul class="navbar-nav mr-auto">
+                        <li class="nav-item active">
+                            <a class="nav-link" href="/">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/contact">Contact</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/register">Register</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/">Login</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
                                 <!-- CONTENT GOES HERE -->
         <main class="container content">
             <form class="centre custom-box" method="post" action="/create-new-user">
@@ -45,7 +70,7 @@
             </form>
         </main>
                                 <!-- Footer -->
-        <footer class="text-muted container">
+        <footer class="text-muted container fixed-bottom">
             <hr>
             <p class="text-muted">&copy; Manuela Spies
             <br><a href="/contact">Contact</a></p>
