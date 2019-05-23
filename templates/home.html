@@ -29,9 +29,15 @@
                     </div>
 
 
+                    {% if results[0][1] == 0 %}
+                    <div class="piechart_block">
+                        <div class="alert-warning alert custom-alert">You have no credits.</div>
+                    </div>
+                    {% else %}
                     <div id="all" class="piechart-block">
                         <div class="piechart" id="all_chart"></div>
                     </div>
+                    {% endif %}
 
                     <div id="l3" class="piechart-block" style="display:none;">
                         <div class="piechart" id="l3_chart"></div>

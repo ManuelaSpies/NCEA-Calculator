@@ -74,6 +74,7 @@ h1 {
     margin-bottom: 3px;
 }
 
-#custom {
-    margin-bottom: 3px;
+.custom-alert {
+    width: 90%;
+    margin: 1px 0 0 0;
 }
