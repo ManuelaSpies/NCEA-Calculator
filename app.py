@@ -138,7 +138,8 @@ def login_page(message):
         message = False
         colour = "alert-light"
     elif message == "account":
-        message = "Something is wrong with your account. Please contact the server operator if the problem persists."
+        message = "Something is wrong with this account. Please contact the server operator if the problem persists." \
+                  "It might just be a typo though."
         colour = "alert-danger"
     elif message == "incorrect":
         message = "The username or password is incorrect."
@@ -151,12 +152,20 @@ def login_page(message):
 
 @app.route('/contact')
 def contact():
-    return render_template("contact.html", session=session)
+    if is_logged_in():
+        base = "base.html"
+    else:
+        base = "nologin_base.html"
+    return render_template("contact.html", session=session, base=base)
 
 
 @app.route('/gallery')
 def gallery():
-    return render_template("gallery.html", session=session)
+    if is_logged_in():
+        base = "base.html"
+    else:
+        base = "nologin_base.html"
+    return render_template("gallery.html", session=session, base=base)
 
 
 @app.route('/overview')
@@ -372,7 +381,7 @@ def register(error):
         message = "Your passwords aren't matching."
         colour = "alert-warning"
     elif error == "space":
-        message = "There is a space in your username!"
+        message = "There is a space in your username! Spaces are not allowed."
         colour = "alert-warning"
     elif error == "username":
         message = "This username is already taken. Try another one."

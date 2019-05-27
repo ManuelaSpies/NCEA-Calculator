@@ -69,6 +69,15 @@ h1 {
     border-bottom: 1px;
 }
 
+footer {
+    background-color: white;
+    margin-top: 1px;
+}
+
+main {
+    margin-bottom: 5px;
+}
+
 .custom-carousel-item {
     border-radius: 25px;
     margin-bottom: 3px;
