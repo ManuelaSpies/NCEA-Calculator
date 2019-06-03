@@ -134,15 +134,21 @@ def main():
 
 @app.route('/login/<message>')
 def login_page(message):
+    if is_logged_in():
+        return redirect('/')
+
     if message == "user":
         message = False
         colour = "alert-light"
     elif message == "account":
-        message = "Something is wrong with this account. Please contact the server operator if the problem persists." \
-                  "It might just be a typo though."
+        message = "Something is wrong with this account. Please contact the server operator if the problem persists. " \
+                  "Please check if you entered the username and password correctly."
         colour = "alert-danger"
     elif message == "incorrect":
         message = "The username or password is incorrect."
+        colour = "alert-warning"
+    elif message == "login":
+        message = "You need to be logged in to access this page."
         colour = "alert-warning"
     else:
         message = False
@@ -171,7 +177,7 @@ def gallery():
 @app.route('/overview')
 def overview():
     if not is_logged_in():
-        return redirect('/login/account')
+        return redirect('/login/login')
 
     # LIST OF ALL COMPLETED STANDARDS
     con = create_connection(DATABASE_NAME)
@@ -208,7 +214,7 @@ def overview():
 @app.route('/new-achievement/<code>')
 def load_add_credits(code):
     if not is_logged_in():
-        return redirect('/login/account')
+        return redirect('/login/login')
 
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
@@ -248,7 +254,7 @@ def load_add_credits(code):
 @app.route('/add-credits', methods=['POST'])
 def add_credits():
     if not is_logged_in():
-        return redirect('/login/account')
+        return redirect('/login/login')
 
     entry_name = request.form['input_as']
     entry_grade = request.form['input_grade']
@@ -291,7 +297,7 @@ def add_credits():
 @app.route('/new-standard/<code>')
 def load_add_standard(code):
     if not is_logged_in():
-        return redirect('/login/account')
+        return redirect('/login/login')
 
     if code == "enter":
         alert = "Enter a standard! :)"
@@ -300,7 +306,9 @@ def load_add_standard(code):
         alert = "Error! This AS Number already exists. Nothing was processed."
         colour = "alert-warning"
     elif code == "input-int":
-        alert = "Error! An integer-only input was entered in another form. Nothing was processed."
+        alert = "Error! An integer-only input (AS ID, amount of credits) was entered as string." \
+                "Please only use digits (0-9)." \
+                "Nothing was processed."
         colour = "alert-danger"
     elif code == "success":
         alert = "Success! The standard was added and you can enter your grade now!"
@@ -308,6 +316,12 @@ def load_add_standard(code):
     elif code == "no-standard":
         alert = "Error! You don't have any standards. Enter them first before adding your credits."
         colour = "alert-warning"
+    elif code == "as-value":
+        alert = "The AS ID was too high/long, or 0 or lower. That doesn't work. Nothing was processed."
+        colour = "alert-danger"
+    elif code == "credit-value":
+        alert = "Negative credits aren't a thing. Don't lie to me. Nothing was processed."
+        colour = "alert-danger"
     else:
         alert = "Enter a standard! :)"
     return render_template("enter_standard.html", alert=alert, logged_in=is_logged_in(), session=session, colour=colour)
@@ -316,7 +330,7 @@ def load_add_standard(code):
 @app.route('/add-standard', methods=['POST'])
 def add_standard():
     if not is_logged_in():
-        return redirect('/login/account')
+        return redirect('/login/login')
 
     entry_as = request.form['standard_name']
     entry_desc = request.form['description']
@@ -332,48 +346,50 @@ def add_standard():
     print("USER INPUT: {}, {}, {}, {}, {}, {}, {}, {}, {}, {}".format
           (entry_as, entry_desc, entry_cred, entry_lev, entry_read, entry_writ, entry_lit, entry_num, entry_ue, user_id))
 
-    # Check if input valid.
+    # Check if input valid:
+    # Check if credit number above / equal to 0, if int.
+    try:
+        if 0 > int(entry_cred):
+            return redirect('/new-standard/credit-value')
+    except TypeError or ValueError:
+        print("ERROR: Integer input (credit number) is not written in integers.")
+        return redirect('/new-standard/input-int')
+
+    # Check if AS number too large / too small, if int.
+    try:
+        if int(entry_as) <= 0 or 2147483647 < int(entry_as):
+            return redirect('/new-standard/as-value')
+    except TypeError or ValueError:
+        print("ERROR: Integer input (AS number) is not written in integers.")
+        return redirect('/new-standard/input-int')
+
+    # Check if the AS number already exists
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
     cur.execute(count_rows_credit_entry, (entry_as, user_id, ))
-
     result_standard = cur.fetchall()
     result_standard = result_standard[0][0]
-
     if result_standard > 0:
         print("ERROR: AS Number exists already.")
         return redirect('/new-standard/input-as')
 
     else:
-        addition_allowed = True
-        try:
-            entry_as = int(entry_as)
-        except ValueError:
-            print("ERROR: Integer input (AS number) is not written in integers.")
-            addition_allowed = False
-
-        try:
-            entry_cred = int(entry_cred)
-        except ValueError:
-            print("ERROR: Integer input (credits) is not written in integers.")
-            addition_allowed = False
-
-        if addition_allowed:
-            con = create_connection(DATABASE_NAME)
-            entry_data = (entry_as, entry_desc, entry_cred, entry_lev, entry_read, entry_writ, entry_lit, entry_num, entry_ue, user_id)
-            cur = con.cursor()
-            cur.execute(new_standard_entry_query, entry_data)
-            con.commit()
-            con.close()
-            print('STATEMENT: Input added successfully.')
-            return redirect('/new-standard/success')
-
-        else:
-            return redirect('/new-standard/input-int')
+        # Creates standard
+        con = create_connection(DATABASE_NAME)
+        entry_data = (entry_as, entry_desc, entry_cred, entry_lev, entry_read, entry_writ, entry_lit, entry_num, entry_ue, user_id)
+        cur = con.cursor()
+        cur.execute(new_standard_entry_query, entry_data)
+        con.commit()
+        con.close()
+        print('STATEMENT: Input added successfully.')
+        return redirect('/new-standard/success')
 
 
 @app.route('/register/<error>')
 def register(error):
+    if is_logged_in():
+        return redirect('/')
+
     if error == "new":
         message = False
         colour = "alert-light"
@@ -483,7 +499,7 @@ def logout():
 @app.route('/settings')
 def settings_page():
     if is_logged_in():
-        return "This page does not yet exist. How did you get here?"
+        return redirect('/')
     else:
         return render_template("register.html")
 

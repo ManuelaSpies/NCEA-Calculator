@@ -18,7 +18,7 @@ create_table_standard = """CREATE TABLE IF NOT EXISTS standard(
 
 create_table_result = """CREATE TABLE IF NOT EXISTS result(
                             entry_id integer PRIMARY KEY AUTOINCREMENT,
-                            as_id integer NOT NULL UNIQUE,
+                            as_id integer NOT NULL,
                             grade text NOT NULL,
                             result_user INTEGER NOT NULL,
                             FOREIGN KEY(result_user) REFERENCES user(user_id)
