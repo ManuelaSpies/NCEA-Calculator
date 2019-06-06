@@ -32,6 +32,14 @@
     z-index: 0 !important;
 }
 
+.nav-link {
+    color: white !important;
+}
+
+.nav-link:hover {
+    text-decoration: underline;
+}
+
 .centre {
   position: fixed;
   top: 50%;
