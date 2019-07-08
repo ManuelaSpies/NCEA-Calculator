@@ -7,10 +7,10 @@
 {% endblock %}
 
 {% block body %}
-    <div class="alert {{ colour }}">
-        {{ alert }}
-    </div>
     <h1>Enter Your Achieved Standard</h1>
+        {% if alert != False %}
+            <div class="alert alert-{{ colour }}">{{ alert }}</div>
+        {% endif %}
     <div class="container">
         <div class="row">
             <div class="col">

@@ -2,20 +2,20 @@ from flask import Flask, render_template, request, redirect, session
 import sqlite3
 from sqlite3 import Error
 from import_data import *
-# from flask_bcrypt import Bcrypt
+from import_messages import *
+from flask_bcrypt import Bcrypt
 
 DATABASE_NAME = "credit.db"
 
 app = Flask(__name__)
 
-# bcrypt = Bcrypt(app)
+flask_bcrypt = Bcrypt(app)
 
 app.secret_key = "コレは秘密다. Jingle bells Käsekuchen. 4729371927"
 
 
 def is_logged_in():
     # initialise_tables(create_connection(DATABASE_NAME))
-
     try:
         print("Session:", session['username'])
         return session['user_id'] != ""
@@ -47,8 +47,6 @@ def execute_query(con, query):
             print(e)
     else:
         print("ERROR: No connection in execute_query().")
-
-    print("STATUS: execute_query() completed.")
 
 
 def initialise_tables(con):
@@ -126,33 +124,17 @@ def main():
     if is_logged_in():
         credits_package = credits_numbers()
         # Credit's Package: [[all [name, total, e, m, a, left, codename (all/l3/...)], l3, l2, l1]
+
         return render_template("home.html", results=credits_package, logged_in=is_logged_in(), session=session)
 
     else:
-        return redirect('/login/user')
+        return redirect('/login')
 
 
-@app.route('/login/<message>')
-def login_page(message):
+@app.route('/login')
+def login_page(message=False, colour="light"):
     if is_logged_in():
         return redirect('/')
-
-    if message == "user":
-        message = False
-        colour = "alert-light"
-    elif message == "account":
-        message = "Something is wrong with this account. Please contact the server operator if the problem persists. " \
-                  "Please check if you entered the username and password correctly."
-        colour = "alert-danger"
-    elif message == "incorrect":
-        message = "The username or password is incorrect."
-        colour = "alert-warning"
-    elif message == "login":
-        message = "You need to be logged in to access this page."
-        colour = "alert-warning"
-    else:
-        message = False
-        colour = "alert-light"
     return render_template("login.html", message=message, colour=colour)
 
 
@@ -177,7 +159,7 @@ def gallery():
 @app.route('/overview')
 def overview():
     if not is_logged_in():
-        return redirect('/login/login')
+        return login_page(not_logged_in, "primary")
 
     # LIST OF ALL COMPLETED STANDARDS
     con = create_connection(DATABASE_NAME)
@@ -211,10 +193,10 @@ def overview():
                            litnum=curriculum_stuff, logged_in=is_logged_in(), session=session)
 
 
-@app.route('/new-achievement/<code>')
-def load_add_credits(code):
+@app.route('/new-achievement')
+def load_add_credits(message=False, colour="light"):
     if not is_logged_in():
-        return redirect('/login/login')
+        return login_page(not_logged_in, "primary")
 
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
@@ -224,37 +206,17 @@ def load_add_credits(code):
     if standards_exist:
         cur.execute(get_all_standard_names, (session['user_id'],))
         asnumbers = cur.fetchall()
-
-        if code == "error":
-            alert = "Warning! An error occured!"
-            colour = "alert-danger"
-        elif code == "standard-exists":
-            alert = "Error! This standard was already achieved! Nothing was processed."
-            colour = "alert-warning"
-        elif code == "standard-missing":
-            alert = "Warning! The standard doesn't exist. Did you enter it?"
-            colour = "alert-warning"
-        elif code == "success":
-            alert = "Your entry was saved. You can find it on your Overview."
-            colour = "alert-success"
-        elif code == "enter":
-            alert = "Please remember that if your standard doesn't show up here, you'll need to enter it first!"
-            colour = "alert-light"
-        else:
-            alert = "Please remember that if your standard doesn't show up here, you'll need to enter it first!"
-            colour = "alert-light"
-
-        return render_template("enter_credits.html", as_numbers=asnumbers, alert=alert,
+        return render_template("enter_credits.html", as_numbers=asnumbers, alert=message,
                                logged_in=is_logged_in(), session=session, colour=colour)
     else:
         print("ERROR: User has no standards; redirected towards enter standards page.")
-        return redirect('/new-standard/no-standards')
+        return load_add_standard(data_missing, "danger")
 
 
 @app.route('/add-credits', methods=['POST'])
 def add_credits():
     if not is_logged_in():
-        return redirect('/login/login')
+        return login_page(not_logged_in, "primary")
 
     entry_name = request.form['input_as']
     entry_grade = request.form['input_grade']
@@ -276,11 +238,11 @@ def add_credits():
 
     if result_standard < 1:
         print("ERROR: Some error with the standards on the tables.")
-        return redirect('/new-achievement/standard missing')
+        return load_add_credits(data_used, "alert")
 
     elif result_results >= 1:
         print("USER: Standard already entered.")
-        return redirect('/new-achievement/standard-exists')
+        return load_add_credits(data_used, "warning")
 
     else:
         con = create_connection(DATABASE_NAME)
@@ -291,46 +253,21 @@ def add_credits():
 
         con.commit()
         con.close()
-        return redirect('/new-achievement/success')
+        return load_add_credits(success, "success")
 
 
-@app.route('/new-standard/<code>')
-def load_add_standard(code):
+@app.route('/new-standard')
+def load_add_standard(message=False, colour="light"):
     if not is_logged_in():
-        return redirect('/login/login')
-
-    if code == "enter":
-        alert = "Enter a standard! :)"
-        colour = "alert-light"
-    elif code == "input-as":
-        alert = "Error! This AS Number already exists. Nothing was processed."
-        colour = "alert-warning"
-    elif code == "input-int":
-        alert = "Error! An integer-only input (AS ID, amount of credits) was entered as string." \
-                "Please only use digits (0-9)." \
-                "Nothing was processed."
-        colour = "alert-danger"
-    elif code == "success":
-        alert = "Success! The standard was added and you can enter your grade now!"
-        colour = "alert-success"
-    elif code == "no-standard":
-        alert = "Error! You don't have any standards. Enter them first before adding your credits."
-        colour = "alert-warning"
-    elif code == "as-value":
-        alert = "The AS ID was too high/long, or 0 or lower. That doesn't work. Nothing was processed."
-        colour = "alert-danger"
-    elif code == "credit-value":
-        alert = "Negative credits aren't a thing. Don't lie to me. Nothing was processed."
-        colour = "alert-danger"
+        return login_page(not_logged_in, "primary")
     else:
-        alert = "Enter a standard! :)"
-    return render_template("enter_standard.html", alert=alert, logged_in=is_logged_in(), session=session, colour=colour)
+        return render_template("enter_standard.html", alert=message, logged_in=is_logged_in(), session=session, colour=colour)
 
 
 @app.route('/add-standard', methods=['POST'])
 def add_standard():
     if not is_logged_in():
-        return redirect('/login/login')
+        return login_page(not_logged_in, "primary")
 
     entry_as = request.form['standard_name']
     entry_desc = request.form['description']
@@ -350,18 +287,19 @@ def add_standard():
     # Check if credit number above / equal to 0, if int.
     try:
         if 0 > int(entry_cred):
-            return redirect('/new-standard/credit-value')
+            return load_add_standard(credit_value, "warning")
     except TypeError or ValueError:
         print("ERROR: Integer input (credit number) is not written in integers.")
-        return redirect('/new-standard/input-int')
+        return load_add_standard(int_input, "warning")
 
     # Check if AS number too large / too small, if int.
     try:
         if int(entry_as) <= 0 or 2147483647 < int(entry_as):
-            return redirect('/new-standard/as-value')
+            return load_add_standard(as_value, "warning")
+
     except TypeError or ValueError:
         print("ERROR: Integer input (AS number) is not written in integers.")
-        return redirect('/new-standard/input-int')
+        return load_add_standard(int_input, "warning")
 
     # Check if the AS number already exists
     con = create_connection(DATABASE_NAME)
@@ -371,7 +309,7 @@ def add_standard():
     result_standard = result_standard[0][0]
     if result_standard > 0:
         print("ERROR: AS Number exists already.")
-        return redirect('/new-standard/input-as')
+        return load_add_standard(as_input, "warning")
 
     else:
         # Creates standard
@@ -381,48 +319,28 @@ def add_standard():
         cur.execute(new_standard_entry_query, entry_data)
         con.commit()
         con.close()
+
         print('STATEMENT: Input added successfully.')
-        return redirect('/new-standard/success')
+        return load_add_standard(success, "success")
 
 
-@app.route('/register/<error>')
-def register(error):
+@app.route('/register')
+def register(message=False, colour="primary"):
     if is_logged_in():
-        return redirect('/')
-
-    if error == "new":
-        message = False
-        colour = "alert-light"
-    elif error == "password":
-        message = "Your passwords aren't matching."
-        colour = "alert-warning"
-    elif error == "space":
-        message = "There is a space in your username! Spaces are not allowed."
-        colour = "alert-warning"
-    elif error == "username":
-        message = "This username is already taken. Try another one."
-        colour = "alert-danger"
-    else:
-        message = "Something went wrong. Contact the site administrator if this problem remains."
-        colour = "alert-danger"
-
+        return login_page(not_logged_in, "primary")
     return render_template("register.html", error_message=message, logged_in=is_logged_in(), session=session, colour=colour)
 
 
 @app.route('/create-new-user', methods=['POST'])
 def create_new_user():
     username = request.form['username']
-    password1 = request.form['password1'].strip().capitalize()
-    password2 = request.form['password2'].strip().capitalize()
+    password1 = request.form['password1']
+    password2 = request.form['password2']
 
     if password1 != password2:
         return redirect('register/password')
 
-    if " " in username:
-        return redirect('/register/space')
-
-    # hashed_password = bcrypt.generate_password_hash(password1).decode('utf-8')
-    hashed_password = password1
+    hashed_password = flask_bcrypt.generate_password_hash(password1).decode('utf-8')
     new_user = (username, hashed_password)
 
     con = create_connection(DATABASE_NAME)
@@ -442,42 +360,44 @@ def create_new_user():
 
     user_data = cur.execute(find_user, (username,)).fetchall()[0]
     print("NEW USER: {}".format(user_data))
-
     user_id = user_data[0]
+
     session['user_id'] = user_id
     session['username'] = username
-    print(user_id)
-
+    print("STATUS: ", user_id, "created and in session.")
     return redirect('/')
 
 
-@app.route('/login', methods=['POST'])
+@app.route('/logging-in', methods=['POST'])
 def login():
     username = request.form['login-username']
     password = request.form['login-password']
 
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
+
+    # Check if there are multiple accounts or none of that username.
     cur.execute(count_rows_username, (username,))
     user_check = cur.fetchall()[0][0]
+    print("user_check: {}".format(user_check))
+    if user_check > 1:
+        return login_page(account_error, "danger")
+    elif user_check == 0:
+        return login_page(incorrect_input, "warning")
 
-    if user_check != 1:
-        redirect('/login/account')
-
+    # Check if data exist (?)
     user_data = cur.execute(find_user, (username,)).fetchall()
-
     try:
         user_id = user_data[0][0]
         username = user_data[0][1]
         db_password = user_data[0][2]
     except IndexError:
-        return redirect('/login/account')
+        return login_page(incorrect_input, "warning")
 
-    # if not bcrypt.check_password_hash(db_password, password):
-    #     return redirect(request.referrer + "?error=Email+invalid+or+password+incorrect")
-
-    if db_password != password:
-        return redirect('/login/incorrect')
+    # Checks if password is correct.
+    if not flask_bcrypt.check_password_hash(db_password, password):
+        print("ERROR: Hash code doesn't align with user's input.")
+        return login_page(incorrect_input, "warning")
 
     session['user_id'] = user_id
     session['username'] = username
@@ -487,9 +407,9 @@ def login():
 @app.route('/logout')
 def logout():
     if not is_logged_in():
-        return redirect('/login/user')
+        return login_page(not_logged_in, "primary")
 
-    print("LOGGING OUT.")
+    print("Status: User logged out.")
     # print(list(session.keys()))
     [session.pop(key) for key in list(session.keys())]
     # print(list(session.keys()))
@@ -497,11 +417,58 @@ def logout():
 
 
 @app.route('/settings')
-def settings_page():
+def settings_page(message=False, colour="primary"):
     if is_logged_in():
-        return redirect('/')
+        user_info = [session['user_id'], session['username']]
+        return render_template("settings.html", user=user_info, session=session, alert=message, colour=colour)
     else:
         return render_template("register.html")
+
+
+@app.route('/settings/change-password', methods=['POST'])
+def change_password():
+    if is_logged_in():
+        # check old password
+        con = create_connection(DATABASE_NAME)
+        cur = con.cursor()
+        user_data = cur.execute(find_user, (session['username'],)).fetchall()
+        old_pw = request.form['oldpassword']
+
+        # Check if the password was correctly entered.
+        # Check if the account exist in the data base. If not, log out and notify user.
+        try:
+            db_password = user_data[0][2]
+        except IndexError:
+            print("ERROR: Index error occured during db password check. User logged out.")
+            [session.pop(key) for key in list(session.keys())]
+            return login_page(account_error, "danger")
+
+        # Check if the password is correct.
+        if not flask_bcrypt.check_password_hash(db_password, old_pw):
+            print("Hash doesn't align with user input.")
+            [session.pop(key) for key in list(session.keys())]
+            return login_page(incorrect_input, "warning")
+
+        new_pw_1 = request.form['newpassword1']
+        new_pw_2 = request.form['newpassword2']
+
+        # Check if the new password was typed correctly. If not, return and notify user.
+        if new_pw_1 != new_pw_2:
+            print("USER ERROR: Passwords don't align.")
+            message = "The passwords aren't the same! Try again."
+            colour = "warning"
+            return settings_page(password_match, "warning")
+
+        # Overwrite password.
+        hashed_password = flask_bcrypt.generate_password_hash(new_pw_1).decode('utf-8')
+        user_id = session['user_id']
+        user_data = (hashed_password, user_id)
+
+        cur.execute(setting_change_password, user_data)
+        return settings_page(success, "success")
+
+    else:
+        return login_page(not_logged_in, "primary")
 
 
 if __name__ == "__main__":

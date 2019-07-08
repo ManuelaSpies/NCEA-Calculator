@@ -10,7 +10,7 @@
     <form class="container" method="post" action="/create-new-user">
         <h1>Register</h1>
         {% if error_message != False %}
-          <div class="alert {{ colour }}">{{ error_message }}</div>
+          <div class="alert alert-{{ colour }}">{{ error_message }}</div>
         {% endif %}
         <div class="form-group row">
             <label class="col-4 col-form-label">Username</label>

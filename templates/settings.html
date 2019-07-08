@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %} Settings {% endblock %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block body %}
+    {% if alert != False %}
+        <div class="alert alert-secondary alert-{{ colour }}">
+            {{ alert }}
+        </div>
+    {% endif %}
+    <div class="container">
+        <div>
+            <h1>{{ user[1] }}</h1>
+        </div>
+        <div>
+            <form class="form-horizontal" method="post" action="settings/change-password">
+                <fieldset>
+                    <legend>Change your password</legend>
+
+                    <!-- Old password input-->
+                    <div class="form-group">
+                      <label class="col-md-4 control-label" for="oldpassword">Old Password</label>
+                      <div class="col-md-4">
+                        <input id="oldpassword" name="oldpassword" type="password" placeholder="Old Password" class="form-control input-md" required="">
+
+                      </div>
+                    </div>
+
+                    <!-- New password input-->
+                    <div class="form-group">
+                      <label class="col-md-4 control-label" for="newpassword1">Enter New Password</label>
+                      <div class="col-md-4">
+                        <input id="newpassword1" name="newpassword1" type="password" placeholder="Your New Password" class="form-control input-md" required="">
+
+                      </div>
+                    </div>
+
+                    <!-- Repeat new password input-->
+                    <div class="form-group">
+                      <label class="col-md-4 control-label" for="newpassword2">Repeat New Password</label>
+                      <div class="col-md-4">
+                        <input id="newpassword2" name="newpassword2" type="password" placeholder="Repeat New Password" class="form-control input-md" required="">
+                      </div>
+                    </div>
+
+                    <!-- Submit button -->
+                    <div class="form-group row">
+                        <div class="offset-4 col-8">
+                            <button name="submit" type="submit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+
+        </div>
+        <div>
+            <h1>Delete data</h1>
+            <!-- Delete account data -> reset account -->
+            <!-- Delete account & all data -->
+        </div>
+    </div>
+{% endblock %}
+{% block footer %}
+{% endblock %}

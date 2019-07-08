@@ -8,9 +8,9 @@
 
 {% block body %}
     <h1>Enter Your Achieved Standard</h1>
-    <div class="alert {{ colour }}">
-        {{ alert }}
-    </div>
+        {% if alert != False %}
+            <div class="alert alert-{{ colour }}">{{ alert }}</div>
+        {% endif %}
     <form method="post" action="/add-standard">
       <div class="form-group row">
         <label for="standard_name" class="col-4 col-form-label">AS Identification Number</label>
