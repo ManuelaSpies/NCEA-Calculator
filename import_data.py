@@ -116,4 +116,4 @@ create_user = """INSERT INTO user(user_id, username, password)
 find_user = """SELECT user_id, username, password
                 FROM user
                 WHERE username = ?;"""
-setting_change_password = "UPDATE user SET password = ? WHERE user_Id = ?;"
+setting_change_password = """UPDATE user SET password = ? WHERE user_Id = ?;"""

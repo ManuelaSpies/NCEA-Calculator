@@ -433,6 +433,8 @@ def change_password():
         cur = con.cursor()
         user_data = cur.execute(find_user, (session['username'],)).fetchall()
         old_pw = request.form['oldpassword']
+        con.commit()
+        con.close()
 
         # Check if the password was correctly entered.
         # Check if the account exist in the data base. If not, log out and notify user.
@@ -455,16 +457,20 @@ def change_password():
         # Check if the new password was typed correctly. If not, return and notify user.
         if new_pw_1 != new_pw_2:
             print("USER ERROR: Passwords don't align.")
-            message = "The passwords aren't the same! Try again."
-            colour = "warning"
             return settings_page(password_match, "warning")
 
         # Overwrite password.
         hashed_password = flask_bcrypt.generate_password_hash(new_pw_1).decode('utf-8')
         user_id = session['user_id']
         user_data = (hashed_password, user_id)
+        print("User data: ", user_data)
 
+        con = create_connection(DATABASE_NAME)
+        cur = con.cursor()
         cur.execute(setting_change_password, user_data)
+        con.commit()
+        con.close()
+
         return settings_page(success, "success")
 
     else:
