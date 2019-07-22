@@ -67,6 +67,9 @@ def get_credits(name, query):
     cur.execute(query, (session['user_id'],))
     entries = cur.fetchall()
 
+    con.commit()
+    con.close()
+
     e_total = 0
     m_total = 0
     a_total = 0
@@ -168,6 +171,9 @@ def overview():
     cur.execute(get_all_done_standards, (session['user_id'],))
     standards = cur.fetchall()
 
+    con.commit()
+    con.close()
+
     # LIST OF ALL CREDITS BY GRADE / LEVEL
     credits_package = credits_numbers()
 
@@ -183,8 +189,14 @@ def overview():
             level[2] = 0
 
     # LIT, NUM, ...
+    con = create_connection(DATABASE_NAME)
+    cur = con.cursor()
+
     cur.execute(get_all_lit_num_things, (session['user_id'],))
     lit_num_data = cur.fetchall()
+
+    con.commit()
+    con.close()
 
     curriculum_stuff = [get_categories(lit_num_data, 1), get_categories(lit_num_data, 2), get_categories(lit_num_data, 3), get_categories(lit_num_data, 4)]
 
@@ -203,9 +215,18 @@ def load_add_credits(message=False, colour="light"):
 
     standards_exist = cur.execute(count_rows_standard_user, (session['user_id'],)).fetchall()[0][0] > 0
 
+    con.commit()
+    con.close()
+
     if standards_exist:
+        con = create_connection(DATABASE_NAME)
+        cur = con.cursor()
+
         cur.execute(get_all_standard_names, (session['user_id'],))
         asnumbers = cur.fetchall()
+
+        con.commit()
+        con.close()
         return render_template("enter_credits.html", as_numbers=asnumbers, alert=message,
                                logged_in=is_logged_in(), session=session, colour=colour)
     else:
@@ -227,14 +248,22 @@ def add_credits():
     # Check if input valid.
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
-    cur.execute(count_rows_credit_entry, (entry_name, user_id,))
 
+    cur.execute(count_rows_credit_entry, (entry_name, user_id,))
     result_standard = cur.fetchall()
     result_standard = result_standard[0][0]
+
+    con.commit()
+    con.close()
+    con = create_connection(DATABASE_NAME)
+    cur = con.cursor()
 
     cur.execute(count_rows_new_entry, (entry_name, user_id))
     result_results = cur.fetchall()
     result_results = result_results[0][0]
+
+    con.commit()
+    con.close()
 
     if result_standard < 1:
         print("ERROR: Some error with the standards on the tables.")
@@ -304,8 +333,13 @@ def add_standard():
     # Check if the AS number already exists
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
+
     cur.execute(count_rows_credit_entry, (entry_as, user_id, ))
     result_standard = cur.fetchall()
+
+    con.commit()
+    con.close()
+
     result_standard = result_standard[0][0]
     if result_standard > 0:
         print("ERROR: AS Number exists already.")
@@ -313,10 +347,13 @@ def add_standard():
 
     else:
         # Creates standard
-        con = create_connection(DATABASE_NAME)
         entry_data = (entry_as, entry_desc, entry_cred, entry_lev, entry_read, entry_writ, entry_lit, entry_num, entry_ue, user_id)
+
+        con = create_connection(DATABASE_NAME)
         cur = con.cursor()
+
         cur.execute(new_standard_entry_query, entry_data)
+
         con.commit()
         con.close()
 
@@ -379,14 +416,24 @@ def login():
     # Check if there are multiple accounts or none of that username.
     cur.execute(count_rows_username, (username,))
     user_check = cur.fetchall()[0][0]
-    print("user_check: {}".format(user_check))
+
+    con.commit()
+    con.close()
+
     if user_check > 1:
         return login_page(account_error, "danger")
     elif user_check == 0:
         return login_page(incorrect_input, "warning")
 
     # Check if data exist (?)
+    con = create_connection(DATABASE_NAME)
+    cur = con.cursor()
+
     user_data = cur.execute(find_user, (username,)).fetchall()
+
+    con.commit()
+    con.close()
+
     try:
         user_id = user_data[0][0]
         username = user_data[0][1]
@@ -425,7 +472,7 @@ def settings_page(message=False, colour="primary"):
         return render_template("register.html")
 
 
-@app.route('/settings/change-password', methods=['POST'])
+@app.route('/change-password', methods=['POST'])
 def change_password():
     if is_logged_in():
         # check old password
