@@ -7,6 +7,7 @@ account_error = "Something is wrong with this account. Please contact the server
 incorrect_input = "Your username or password is incorrect. Please try again."
 
 password_match = "Your passwords did not match. Please try again."
+username_exists = "This username is taken. Try another one."
 
 # Data entering
 data_missing = "You currently have no related data entered for that action. Enter that first. Here's the right page." \

@@ -375,7 +375,7 @@ def create_new_user():
     password2 = request.form['password2']
 
     if password1 != password2:
-        return redirect('register/password')
+        return register(password_match, 'warning')
 
     hashed_password = flask_bcrypt.generate_password_hash(password1).decode('utf-8')
     new_user = (username, hashed_password)
@@ -387,7 +387,7 @@ def create_new_user():
     try:
         cur.execute(create_user, new_user)
     except sqlite3.IntegrityError:
-        return redirect('/register/username')
+        return register(username_exists, 'warning')
 
     con.commit()
     con.close()
