@@ -491,7 +491,31 @@ def settings_page(message=False, colour="primary"):
 
 @app.route('/change-username', methods=['POST'])
 def change_username():
-    return 'lol'
+    # Checks if the user is logged in
+    login_check()
+
+    # Is the password correct?
+    password = request.form['password']
+    check_password(password, session)
+
+    # Tries to enter the new user name --> catches error if username exists
+    username = request.form['newusername']
+    user_data = (username, session['user_id'])
+
+    con = create_connection(DATABASE_NAME)
+    cur = con.cursor()
+    try:
+        cur.execute(setting_change_username, user_data)
+    except sqlite3.IntegrityError:
+        print("USER ERROR: The username already exists.")
+        return settings_page(username_exists, 'warning')
+    con.commit()
+    con.close()
+
+    # Overwrites session
+    session['username'] = username
+
+    return settings_page(success, 'success')
 
 
 @app.route('/change-password', methods=['POST'])

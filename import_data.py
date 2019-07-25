@@ -117,3 +117,4 @@ find_user = """SELECT user_id, username, password
                 FROM user
                 WHERE username = ?;"""
 setting_change_password = """UPDATE user SET password = ? WHERE user_Id = ?;"""
+setting_change_username = """UPDATE user SET username = ? WHERE user_id = ?;"""
