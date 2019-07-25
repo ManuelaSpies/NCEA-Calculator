@@ -23,6 +23,12 @@ def is_logged_in():
         print("Not logged in")
         return False
 
+def login_check():
+    if is_logged_in() is False:
+        return login_page(not_logged_in, "primary")
+    else:
+        return True
+
 
 def create_connection(db_file):
     """create a connection to the sqlite db"""
@@ -122,28 +128,47 @@ def get_categories(data, number):
     return outcome
 
 
+def check_password(user_input, user_session=session):
+    con = create_connection(DATABASE_NAME)
+    cur = con.cursor()
+    user_data = cur.execute(find_user, (user_session['username'],)).fetchall()
+    con.commit()
+    con.close()
+
+    # Check if the account exist in the data base. If not, log out and notify user.
+    try:
+        db_password = user_data[0][2]
+    except IndexError:
+        print("ERROR: Index error occured during db password check. User logged out.")
+        [user_session.pop(key) for key in list(user_session.keys())]
+        return login_page(account_error, "danger")
+
+    # Check if the password is correct.
+    if not flask_bcrypt.check_password_hash(db_password, user_input):
+        print("Hash doesn't align with user input.")
+        [user_session.pop(key) for key in list(user_session.keys())]
+        return login_page(incorrect_input, "warning")
+
+
 @app.route('/')
 def main():
-    if is_logged_in():
-        credits_package = credits_numbers()
-        # Credit's Package: [[all [name, total, e, m, a, left, codename (all/l3/...)], l3, l2, l1]
+    login_check()
 
-        return render_template("home.html", results=credits_package, logged_in=is_logged_in(), session=session)
+    # Credit's Package: [[all [name, total, e, m, a, left, codename (all/l3/...)], l3, l2, l1]
+    credits_package = credits_numbers()
 
-    else:
-        return redirect('/login')
-
+    return render_template("home.html", results=credits_package, logged_in=is_logged_in(), session=session)
 
 @app.route('/login')
 def login_page(message=False, colour="light"):
-    if is_logged_in():
+    if login_check():
         return redirect('/')
     return render_template("login.html", message=message, colour=colour)
 
 
 @app.route('/contact')
 def contact():
-    if is_logged_in():
+    if is_logged_in != False:
         base = "base.html"
     else:
         base = "nologin_base.html"
@@ -152,7 +177,7 @@ def contact():
 
 @app.route('/gallery')
 def gallery():
-    if is_logged_in():
+    if is_logged_in != False:
         base = "base.html"
     else:
         base = "nologin_base.html"
@@ -161,8 +186,7 @@ def gallery():
 
 @app.route('/overview')
 def overview():
-    if not is_logged_in():
-        return login_page(not_logged_in, "primary")
+    login_check()
 
     # LIST OF ALL COMPLETED STANDARDS
     con = create_connection(DATABASE_NAME)
@@ -207,8 +231,7 @@ def overview():
 
 @app.route('/new-achievement')
 def load_add_credits(message=False, colour="light"):
-    if not is_logged_in():
-        return login_page(not_logged_in, "primary")
+    login_check()
 
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
@@ -236,8 +259,7 @@ def load_add_credits(message=False, colour="light"):
 
 @app.route('/add-credits', methods=['POST'])
 def add_credits():
-    if not is_logged_in():
-        return login_page(not_logged_in, "primary")
+    login_check()
 
     entry_name = request.form['input_as']
     entry_grade = request.form['input_grade']
@@ -287,16 +309,13 @@ def add_credits():
 
 @app.route('/new-standard')
 def load_add_standard(message=False, colour="light"):
-    if not is_logged_in():
-        return login_page(not_logged_in, "primary")
-    else:
-        return render_template("enter_standard.html", alert=message, logged_in=is_logged_in(), session=session, colour=colour)
+    login_check()
+    return render_template("enter_standard.html", alert=message, logged_in=is_logged_in(), session=session, colour=colour)
 
 
 @app.route('/add-standard', methods=['POST'])
 def add_standard():
-    if not is_logged_in():
-        return login_page(not_logged_in, "primary")
+    login_check()
 
     entry_as = request.form['standard_name']
     entry_desc = request.form['description']
@@ -363,8 +382,8 @@ def add_standard():
 
 @app.route('/register')
 def register(message=False, colour="primary"):
-    if is_logged_in():
-        return login_page(not_logged_in, "primary")
+    if is_logged_in() is not False:
+        return redirect('/')
     return render_template("register.html", error_message=message, logged_in=is_logged_in(), session=session, colour=colour)
 
 
@@ -453,8 +472,7 @@ def login():
 
 @app.route('/logout')
 def logout():
-    if not is_logged_in():
-        return login_page(not_logged_in, "primary")
+    login_check()
 
     print("Status: User logged out.")
     # print(list(session.keys()))
@@ -465,63 +483,47 @@ def logout():
 
 @app.route('/settings')
 def settings_page(message=False, colour="primary"):
-    if is_logged_in():
-        user_info = [session['user_id'], session['username']]
-        return render_template("settings.html", user=user_info, session=session, alert=message, colour=colour)
-    else:
-        return render_template("register.html")
+    login_check()
+
+    user_info = [session['user_id'], session['username']]
+    return render_template("settings.html", user=user_info, session=session, alert=message, colour=colour)
+
+
+@app.route('/change-username', methods=['POST'])
+def change_username():
+    return 'lol'
 
 
 @app.route('/change-password', methods=['POST'])
 def change_password():
-    if is_logged_in():
-        # check old password
-        con = create_connection(DATABASE_NAME)
-        cur = con.cursor()
-        user_data = cur.execute(find_user, (session['username'],)).fetchall()
-        old_pw = request.form['oldpassword']
-        con.commit()
-        con.close()
+    login_check()
 
-        # Check if the password was correctly entered.
-        # Check if the account exist in the data base. If not, log out and notify user.
-        try:
-            db_password = user_data[0][2]
-        except IndexError:
-            print("ERROR: Index error occured during db password check. User logged out.")
-            [session.pop(key) for key in list(session.keys())]
-            return login_page(account_error, "danger")
+    # check old password
+    old_pw = request.form['oldpassword']
 
-        # Check if the password is correct.
-        if not flask_bcrypt.check_password_hash(db_password, old_pw):
-            print("Hash doesn't align with user input.")
-            [session.pop(key) for key in list(session.keys())]
-            return login_page(incorrect_input, "warning")
+    check_password(old_pw, session)
 
-        new_pw_1 = request.form['newpassword1']
-        new_pw_2 = request.form['newpassword2']
+    new_pw_1 = request.form['newpassword1']
+    new_pw_2 = request.form['newpassword2']
 
-        # Check if the new password was typed correctly. If not, return and notify user.
-        if new_pw_1 != new_pw_2:
-            print("USER ERROR: Passwords don't align.")
-            return settings_page(password_match, "warning")
+    # Check if the new password was typed correctly. If not, return and notify user.
+    if new_pw_1 != new_pw_2:
+        print("USER ERROR: Passwords don't align.")
+        return settings_page(password_match, "warning")
 
-        # Overwrite password.
-        hashed_password = flask_bcrypt.generate_password_hash(new_pw_1).decode('utf-8')
-        user_id = session['user_id']
-        user_data = (hashed_password, user_id)
-        print("User data: ", user_data)
+    # Overwrite password.
+    hashed_password = flask_bcrypt.generate_password_hash(new_pw_1).decode('utf-8')
+    user_id = session['user_id']
+    user_data = (hashed_password, user_id)
+    print("User data: ", user_data)
 
-        con = create_connection(DATABASE_NAME)
-        cur = con.cursor()
-        cur.execute(setting_change_password, user_data)
-        con.commit()
-        con.close()
+    con = create_connection(DATABASE_NAME)
+    cur = con.cursor()
+    cur.execute(setting_change_password, user_data)
+    con.commit()
+    con.close()
 
-        return settings_page(success, "success")
-
-    else:
-        return login_page(not_logged_in, "primary")
+    return settings_page(success, "success")
 
 
 if __name__ == "__main__":
