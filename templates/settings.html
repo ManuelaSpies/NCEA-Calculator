@@ -55,24 +55,32 @@
                     </div>
                 </fieldset>
             </form>
-            <form class="col form-horizontal custom-box" method="post" action="/change-username">
-                <fieldset>
-                    <legend>Change your username</legend>
 
-                    <!-- Password input-->
+            <form class="col form-horizontal custom-box" method="post" action="/change-username"
+                  title="Change username function" aria-label="Use this option to change your username.">
+                <fieldset>
+                    <h2>Change your username</h2>
+
+                    <p>Your current username is <strong>{{ user[1] }}</strong>.</p>
+
+                    <!-- New username input-->
                     <div class="form-group row">
-                      <label class="col-md-4 control-label" for="password">Password</label>
+                      <label class="col-md-4 control-label" for="newusername" id="label-newusername"
+                             aria-label="Enter the user name you would like to change to here.">New Username</label>
                       <div class="col-md-4">
-                        <input id="password" name="password" type="password" placeholder="Password" class="form-control input-md" required="">
+                        <input id="newusername" name="newusername" type="text" placeholder="Your New Username"
+                               class="form-control input-md" required="" aria-labelledby="label-newusername">
 
                       </div>
                     </div>
 
-                    <!-- New username input-->
+                    <!-- Password input-->
                     <div class="form-group row">
-                      <label class="col-md-4 control-label" for="newusername">New Username</label>
+                      <label class="col-md-4 control-label" for="password" id="label-password"
+                      aria-label="Enter your password to check if it's really you.">Password</label>
                       <div class="col-md-4">
-                        <input id="newusername" name="newusername" type="text" placeholder="Your New Username" class="form-control input-md" required="">
+                        <input id="password" name="password" type="password" placeholder="Password"
+                               class="form-control input-md" required="" aria-labelledby="label-password">
 
                       </div>
                     </div>
@@ -80,7 +88,8 @@
                     <!-- Submit button -->
                     <div class="form-group row">
                         <div class="offset-4 col-8">
-                            <button name="submit" type="submit" class="btn btn-primary">Submit</button>
+                            <button name="submit" type="submit" class="btn btn-primary"
+                            aria-label="Press this button to submit the form and change your username.">Submit</button>
                         </div>
                     </div>
                 </fieldset>

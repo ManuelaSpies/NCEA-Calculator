@@ -142,13 +142,17 @@ def check_password(user_input, user_session=session):
     except IndexError:
         print("ERROR: Index error occured during db password check. User logged out.")
         [user_session.pop(key) for key in list(user_session.keys())]
-        return login_page(account_error, "danger")
+        return [False, account_error, "danger"]
+        # return render_template("Login.html", message=account_error, colour="danger")
 
     # Check if the password is correct.
     if not flask_bcrypt.check_password_hash(db_password, user_input):
-        print("Hash doesn't align with user input.")
+        print("ERROR: Hash doesn't align with user input. User logged out.")
         [user_session.pop(key) for key in list(user_session.keys())]
-        return login_page(incorrect_input, "warning")
+        return [False, incorrect_input, "warning"]
+        # return render_template("Login.html", message=False, colour="light")
+
+    return [True, False, "light"]
 
 
 @app.route('/')
@@ -164,7 +168,7 @@ def main():
 
 @app.route('/login')
 def login_page(message=False, colour="light"):
-    if is_logged_in() == False:
+    if is_logged_in() is False:
         return render_template("login.html", message=message, colour=colour)
     else:
         return redirect('/')
@@ -501,7 +505,9 @@ def change_username():
 
     # Is the password correct?
     password = request.form['password']
-    check_password(password, session)
+    pw_check = check_password(password, session)
+    if pw_check[0] is False:
+        return render_template("login.html", message=pw_check[1], colour=pw_check[2])
 
     # Tries to enter the new user name --> catches error if username exists
     username = request.form['newusername']
@@ -529,13 +535,13 @@ def change_password():
 
     # check old password
     old_pw = request.form['oldpassword']
-
-    check_password(old_pw, session)
-
-    new_pw_1 = request.form['newpassword1']
-    new_pw_2 = request.form['newpassword2']
+    pw_check = check_password(old_pw, session)
+    if pw_check[0] is False:
+        return render_template("login.html", message=pw_check[1], colour=pw_check[2])
 
     # Check if the new password was typed correctly. If not, return and notify user.
+    new_pw_1 = request.form['newpassword1']
+    new_pw_2 = request.form['newpassword2']
     if new_pw_1 != new_pw_2:
         print("USER ERROR: Passwords don't align.")
         return settings_page(password_match, "warning")

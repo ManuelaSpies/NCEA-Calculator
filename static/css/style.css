@@ -54,6 +54,7 @@
 .custom-box {
     border: 1px solid black;
     border-radius: 25px;
+    margin: 1px;
     /*padding: 20px 20px 0 20px;*/
 }
 
