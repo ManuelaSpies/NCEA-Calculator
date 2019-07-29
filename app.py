@@ -23,8 +23,9 @@ def is_logged_in():
         print("Not logged in")
         return False
 
+
 def login_check():
-    if is_logged_in() is False:
+    if is_logged_in() == False:
         return login_page(not_logged_in, "primary")
     else:
         return True
@@ -152,23 +153,26 @@ def check_password(user_input, user_session=session):
 
 @app.route('/')
 def main():
-    login_check()
+    if is_logged_in() == False:
+        return redirect('/login')
 
     # Credit's Package: [[all [name, total, e, m, a, left, codename (all/l3/...)], l3, l2, l1]
     credits_package = credits_numbers()
 
     return render_template("home.html", results=credits_package, logged_in=is_logged_in(), session=session)
 
+
 @app.route('/login')
 def login_page(message=False, colour="light"):
-    if login_check():
+    if is_logged_in() == False:
+        return render_template("login.html", message=message, colour=colour)
+    else:
         return redirect('/')
-    return render_template("login.html", message=message, colour=colour)
 
 
 @app.route('/contact')
 def contact():
-    if is_logged_in != False:
+    if is_logged_in() != False:
         base = "base.html"
     else:
         base = "nologin_base.html"
@@ -177,7 +181,7 @@ def contact():
 
 @app.route('/gallery')
 def gallery():
-    if is_logged_in != False:
+    if is_logged_in() != False:
         base = "base.html"
     else:
         base = "nologin_base.html"
@@ -186,7 +190,8 @@ def gallery():
 
 @app.route('/overview')
 def overview():
-    login_check()
+    if is_logged_in() == False:
+        return redirect('/login')
 
     # LIST OF ALL COMPLETED STANDARDS
     con = create_connection(DATABASE_NAME)
