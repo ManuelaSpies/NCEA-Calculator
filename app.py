@@ -482,7 +482,6 @@ def login():
 @app.route('/logout')
 def logout():
     login_check()
-
     print("Status: User logged out.")
     # print(list(session.keys()))
     [session.pop(key) for key in list(session.keys())]
@@ -559,6 +558,98 @@ def change_password():
     con.close()
 
     return settings_page(success, "success")
+
+
+@app.route('/delete-account', methods=['GET', 'POST'])
+def delete_user_account():
+    # Check if the user agrees to delete the account
+    security = request.form['security'].lower().replace(" ", "")
+    if security != 'yes':
+        print("ACTION ABORTED: User did not agree.")
+        return settings_page(agreement, "warning")
+
+    # Username check
+    username = request.form['username']
+    if username != session['username']:
+        print("ACTION ABORTED: User did not input username correctly.")
+        return settings_page(incorrect_input, "warning")
+
+    # Password check 1
+    password1 = request.form['password1']
+    pw_check1 = check_password(password1, session)
+    if pw_check1[0] is False:
+        print("ACTION ABORTED: User did not input password (input one) correctly.")
+        return render_template("login.html", message=pw_check1[1], colour=pw_check1[2])
+
+    # Password check 2
+    password2 = request.form['password2']
+    pw_check2 = check_password(password2, session)
+    if pw_check2[0] is False:
+        print("ACTION ABORTED: User did not input password (input two) correctly.")
+        return render_template("login.html", message=pw_check2[1], colour=pw_check2[2])
+
+    # Deleting the account process
+    user_id = session['user_id']
+
+    # Deleting data from standard table
+    con = create_connection(DATABASE_NAME)
+    cur = con.cursor()
+    cur.execute(delete_account_standard, (user_id,))
+    con.commit()
+    con.close()
+
+    # Deleting data from result table
+    con = create_connection(DATABASE_NAME)
+    cur = con.cursor()
+    cur.execute(delete_account_result, (user_id,))
+    con.commit()
+    con.close()
+
+    # Deleting data from user table
+    con = create_connection(DATABASE_NAME)
+    cur = con.cursor()
+    cur.execute(delete_account_user, (user_id,))
+    con.commit()
+    con.close()
+
+    print("STATUS: Deleted user {} (ID: {}). Logged out.".format(username, user_id))
+    return redirect('/logout')
+
+
+@app.route('/delete-data', methods=['GET', 'POST'])
+def delete_user_data():
+    # Check if the user agrees to delete all data
+    security = request.form['security2'].lower().replace(" ", "")
+    if security != 'yes':
+        print("ACTION ABORTED: User did not agree.")
+        return settings_page(agreement, "warning")
+
+    # Password check 1
+    password1 = request.form['pw_data']
+    pw_check1 = check_password(password1, session)
+    if pw_check1[0] is False:
+        print("ACTION ABORTED: User did not input password (input one) correctly.")
+        return render_template("login.html", message=pw_check1[1], colour=pw_check1[2])
+
+    # Deleting the account process
+    user_id = session['user_id']
+
+    # Deleting data from standard table
+    con = create_connection(DATABASE_NAME)
+    cur = con.cursor()
+    cur.execute(delete_account_standard, (user_id,))
+    con.commit()
+    con.close()
+
+    # Deleting data from result table
+    con = create_connection(DATABASE_NAME)
+    cur = con.cursor()
+    cur.execute(delete_account_result, (user_id,))
+    con.commit()
+    con.close()
+
+    print("STATUS: All data of {} (ID: {}) was deleted.".format(session['username'], session['user_id']))
+    return settings_page(success, 'success')
 
 
 if __name__ == "__main__":

@@ -55,7 +55,6 @@
                     </div>
                 </fieldset>
             </form>
-
             <form class="col form-horizontal custom-box" method="post" action="/change-username"
                   title="Change username function" aria-label="Use this option to change your username.">
                 <fieldset>
@@ -95,14 +94,103 @@
                 </fieldset>
             </form>
         </div>
-        <div>
+        <div class="row">
+            <form class="col form-horizontal custom-box" method="post" action="/delete-account"
+                  title="Delete your account function" aria-label="Use this option to delete your account.">
+                <fieldset>
+                    <h2>Delete your account</h2>
 
+                    <p>The account you are using is <strong>{{ user[1] }}</strong>.
+                        This function will delete <strong>all</strong> data, with an exception of the
+                        existence of your account itself.</p>
+
+                    <!-- Username -->
+                    <div class="form-group row">
+                      <label class="col-md-4 control-label" for="username" id="label-username"
+                             aria-label="To avoid mistakes, enter your username to use this function.">Username</label>
+                      <div class="col-md-4">
+                        <input id="username" name="username" type="text" placeholder="Username"
+                               class="form-control input-md" required="" aria-labelledby="label-username">
+                      </div>
+                    </div>
+
+                    <!-- Password input-->
+                    <div class="form-group row">
+                      <label class="col-md-4 control-label" for="password1" id="label-password1"
+                      aria-label="Enter your password to check if it's really you.">Password</label>
+                      <div class="col-md-4">
+                        <input id="password1" name="password1" type="password" placeholder="Password"
+                               class="form-control input-md" required="" aria-labelledby="label-password1">
+                      </div>
+                    </div>
+
+                    <!-- Password input 2 -->
+                    <div class="form-group row">
+                      <label class="col-md-4 control-label" for="password2" id="label-password2"
+                      aria-label="Enter your password again to check if it's really you.">Repeat Password</label>
+                      <div class="col-md-4">
+                        <input id="password2" name="password2" type="password" placeholder="Password"
+                               class="form-control input-md" required="" aria-labelledby="label-password2">
+                      </div>
+                    </div>
+
+                    <!-- Security check -->
+                    <div class="form-group row">
+                      <label class="col-md-4 control-label" for="password" id="label-security"
+                      aria-label="Type YES (Y-E-S) to continue.">Do you agree to delete this account? (Type YES)</label>
+                      <div class="col-md-4">
+                        <input id="security" name="security" type="text" placeholder="Yes or No"
+                               class="form-control input-md" required="" aria-labelledby="label-security">
+                      </div>
+                    </div>
+
+                    <!-- Submit button -->
+                    <div class="form-group row">
+                        <div class="offset-4 col-8">
+                            <button name="submit" type="submit" class="btn btn-primary"
+                            aria-label="Press this button to submit the form and delete your account.">Submit</button>
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+            <form class="col form-horizontal custom-box" method="post" action="/delete-data"
+                  title="Delete your stored data function" aria-label="Use this option to delete all data (standards & achievements) from your account.">
+                <fieldset>
+                    <h2>Delete your data</h2>
+
+                    <p>The account you are using is <strong>{{ user[1] }}</strong>.</p>
+
+                    <!-- Password input-->
+                    <div class="form-group row">
+                      <label class="col-md-4 control-label" for="pw_data" id="label-pw_data"
+                      aria-label="Enter your password to check if it's really you.">Password</label>
+                      <div class="col-md-4">
+                        <input id="pw_data" name="pw_data" type="password" placeholder="Password"
+                               class="form-control input-md" required="" aria-labelledby="label-pw_data">
+                      </div>
+                    </div>
+
+                    <!-- Security check -->
+                    <div class="form-group row">
+                      <label class="col-md-4 control-label" for="security2" id="label-security2"
+                      aria-label="Type YES (Y-E-S) to continue.">Do you agree to delete all data? (Type YES)</label>
+                      <div class="col-md-4">
+                        <input id="security2" name="security2" type="text" placeholder="Yes or No"
+                               class="form-control input-md" required="" aria-labelledby="label-security2">
+                      </div>
+                    </div>
+
+                    <!-- Submit button -->
+                    <div class="form-group row">
+                        <div class="offset-4 col-8">
+                            <button name="submit" type="submit" class="btn btn-primary"
+                            aria-label="Press this button to submit the form and delete all data from your account.">Submit</button>
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
         </div>
-        <div>
-            <h1>Delete data</h1>
-            <!-- Delete account data -> reset account -->
-            <!-- Delete account & all data -->
-        </div>
+            <!-- Reset account -->
     </div>
 {% endblock %}
 {% block footer %}

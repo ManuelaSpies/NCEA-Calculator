@@ -116,5 +116,10 @@ create_user = """INSERT INTO user(user_id, username, password)
 find_user = """SELECT user_id, username, password
                 FROM user
                 WHERE username = ?;"""
-setting_change_password = """UPDATE user SET password = ? WHERE user_Id = ?;"""
+
+setting_change_password = """UPDATE user SET password = ? WHERE user_id = ?;"""
 setting_change_username = """UPDATE user SET username = ? WHERE user_id = ?;"""
+
+delete_account_result = """DELETE FROM result WHERE result_user = ?;"""
+delete_account_standard = """DELETE FROM standard WHERE standard_user = ?;"""
+delete_account_user = """DELETE FROM user WHERE user_id = ?;"""

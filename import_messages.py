@@ -9,6 +9,8 @@ incorrect_input = "Your username or password is incorrect. Please try again."
 password_match = "Your passwords did not match. Please try again."
 username_exists = "This username is taken. Try another one."
 
+agreement = "Please agree if you want to use this function."
+
 # Data entering
 data_missing = "You currently have no related data entered for that action. Enter that first. Here's the right page." \
                "If the problem persists, contact the server operator or try to enter the data you intended to use/edit."
