@@ -104,6 +104,7 @@
                 <th>UE Writing</th>
                 <th>UE Credits</th>
                 <th>Grade</th>
+                <th></th>
             </tr>
             {% for row in standards %}
                 <tr>
@@ -116,6 +117,10 @@
                     <td>{{ row[9] }}</td>
                     <td>{{ row[10] }}</td>
                     <td>{{ row[1] }}</td>
+                    <td>
+                        <a href="/delete-standard/{{ row[0] }}">Delete</a> -
+                        <a href="/edit-standard/{{ row[0] }}">Edit</a>
+                    </td>
                 </tr>
             {%  endfor %}
         </table>

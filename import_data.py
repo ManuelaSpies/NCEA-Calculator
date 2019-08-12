@@ -103,12 +103,14 @@ get_all_lit_num_things = """SELECT credits, literacy, numeracy, reading, writing
                             OR literacy = "Yes")
                             AND standard_user = ?;"""
 
-# Enter data queries
+# Queries to enter, edit and delete standards & grades
 new_credit_entry_query = """INSERT INTO result(entry_id, as_id, grade, result_user)
                             VALUES(NULL, ?, ?, ?);"""
+
 new_standard_entry_query = """INSERT INTO standard(standard_id, standard_name, description, credits, ncea_level, 
                               reading, writing, literacy, numeracy, ue_credits, standard_user)
                               VALUES(NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
+delete_standard_query = """DELETE FROM standard WHERE standard_id = ?;"""
 
 # User Related Queries
 create_user = """INSERT INTO user(user_id, username, password) 

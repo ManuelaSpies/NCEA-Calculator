@@ -389,6 +389,26 @@ def add_standard():
         return load_add_standard(success, "success")
 
 
+@app.route('/delete-standard/<standard_id>')
+def delete_standard(standard_id):
+    con = create_connection(DATABASE_NAME)
+    cur = con.cursor()
+
+    cur.execute(delete_standard_query, standard_id)
+
+    con.commit()
+    con.close()
+
+    print('STATEMENT: Standard {} was deleted by {} (ID: {}).'.format(standard_id, session['username'], session['user_id']))
+    return redirect('/overview')
+
+
+@app.route('/edit-standard/<standard_id>')
+def edit_standard(standard_id):
+
+    return "ajsdkf;ajslf;d"
+
+
 @app.route('/register')
 def register(message=False, colour="primary"):
     if is_logged_in() is not False:
