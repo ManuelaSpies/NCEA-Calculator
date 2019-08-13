@@ -406,7 +406,7 @@ def delete_standard(standard_id):
 @app.route('/edit-standard/<standard_id>')
 def edit_standard(standard_id):
 
-    return "ajsdkf;ajslf;d"
+    return "ajsdkf; ajslf;d"
 
 
 @app.route('/register')
