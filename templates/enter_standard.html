@@ -11,7 +11,7 @@
         {% if alert != False %}
             <div class="alert alert-{{ colour }}">{{ alert }}</div>
         {% endif %}
-    <form method="post" action="/add-standard">
+    <form method="post" action="{{ action }}">
       <div class="form-group row">
         <label for="standard_name" class="col-4 col-form-label">AS Identification Number</label>
         <div class="col-8">
@@ -19,20 +19,20 @@
             <div class="input-group-prepend">
               <div class="input-group-text">AS</div>
             </div>
-            <input id="standard_name" name="standard_name" placeholder="912345" type="text" class="form-control" required="required">
+              <input id="standard_name" name="standard_name" placeholder="912345" type="text" class="form-control" value="{{ content[1] }}" required="required">
           </div>
         </div>
       </div>
       <div class="form-group row">
         <label for="description" class="col-4 col-form-label">Description (What is it about?)</label>
         <div class="col-8">
-          <textarea id="description" name="description" cols="40" rows="2" class="form-control" required="required"></textarea>
+          <textarea id="description" name="description" cols="40" rows="2" class="form-control" required="required">{{ content[2] }}</textarea>
         </div>
       </div>
       <div class="form-group row">
         <label for="credits" class="col-4 col-form-label">Credits</label>
         <div class="col-8">
-          <input id="credits" name="credits" type="text" class="form-control" aria-describedby="creditsHelpBlock" required="required">
+          <input id="credits" name="credits" type="text" class="form-control" aria-describedby="creditsHelpBlock" value="{{ content[3] }}" required="required">
           <span id="creditsHelpBlock" class="form-text text-muted">Enter an integer only.</span>
         </div>
       </div>
@@ -40,9 +40,9 @@
         <label for="ncea_level" class="col-4 col-form-label">NCEA Level</label>
         <div class="col-8">
           <select id="ncea_level" name="ncea_level" class="custom-select" required="required" size="3">
-            <option value="1">Level 1</option>
-            <option value="2">Level 2</option>
-            <option value="3">Level 3</option>
+            <option value="1" {%  if content[4] == 1 %}selected="selected"{% endif %}>Level 1</option>
+            <option value="2" {%  if content[4] == 2 %}selected="selected"{% endif %}>Level 2</option>
+            <option value="3" {%  if content[4] == 3 %}selected="selected"{% endif %}>Level 3</option>
           </select>
         </div>
       </div>
@@ -50,11 +50,11 @@
         <label class="col-4">UE Reading</label>
         <div class="col-8">
           <div class="custom-control custom-radio custom-control-inline">
-            <input name="reading" id="reading_0" type="radio" class="custom-control-input" value="Yes" required="required">
+            <input name="reading" id="reading_0" type="radio" class="custom-control-input" value="Yes" required="required" {% if content[5] == "Yes" %}checked{% endif %}>
             <label for="reading_0" class="custom-control-label">Yes</label>
           </div>
           <div class="custom-control custom-radio custom-control-inline">
-            <input name="reading" id="reading_1" type="radio" class="custom-control-input" value="No" required="required">
+            <input name="reading" id="reading_1" type="radio" class="custom-control-input" value="No" required="required" {% if content[5] == "No" %}checked{% endif %}>
             <label for="reading_1" class="custom-control-label">No</label>
           </div>
         </div>
@@ -63,11 +63,11 @@
         <label class="col-4">UE Writing</label>
         <div class="col-8">
           <div class="custom-control custom-radio custom-control-inline">
-            <input name="writing" id="writing_0" type="radio" required="required" class="custom-control-input" value="Yes">
+            <input name="writing" id="writing_0" type="radio" required="required" class="custom-control-input" value="Yes" {% if content[6] == "Yes" %}checked{% endif %}>
             <label for="writing_0" class="custom-control-label">Yes</label>
           </div>
           <div class="custom-control custom-radio custom-control-inline">
-            <input name="writing" id="writing_1" type="radio" required="required" class="custom-control-input" value="No">
+            <input name="writing" id="writing_1" type="radio" required="required" class="custom-control-input" value="No" {% if content[6] == "No" %}checked{% endif %}>
             <label for="writing_1" class="custom-control-label">No</label>
           </div>
         </div>
@@ -76,11 +76,11 @@
         <label class="col-4">L1 Literacy</label>
         <div class="col-8">
           <div class="custom-control custom-radio custom-control-inline">
-            <input name="literacy" id="literacy_0" type="radio" class="custom-control-input" value="Yes" required="required">
+            <input name="literacy" id="literacy_0" type="radio" class="custom-control-input" value="Yes" required="required" {% if content[7]== "Yes" %}checked="checked"{% endif %}>
             <label for="literacy_0" class="custom-control-label">Yes</label>
           </div>
           <div class="custom-control custom-radio custom-control-inline">
-            <input name="literacy" id="literacy_1" type="radio" class="custom-control-input" value="No" required="required">
+            <input name="literacy" id="literacy_1" type="radio" class="custom-control-input" value="No" required="required" {% if content[7] == "No" %}checked="checked"{% endif %}>
             <label for="literacy_1" class="custom-control-label">No</label>
           </div>
         </div>
@@ -89,11 +89,11 @@
         <label class="col-4">L1 Numeracy</label>
         <div class="col-8">
           <div class="custom-control custom-radio custom-control-inline">
-            <input name="numeracy" id="numeracy_0" type="radio" class="custom-control-input" value="Yes" required="required">
+            <input name="numeracy" id="numeracy_0" type="radio" class="custom-control-input" value="Yes" required="required" {% if content[8] == "Yes" %}checked="checked"{% endif %}>
             <label for="numeracy_0" class="custom-control-label">Yes</label>
           </div>
           <div class="custom-control custom-radio custom-control-inline">
-            <input name="numeracy" id="numeracy_1" type="radio" class="custom-control-input" value="No" required="required">
+            <input name="numeracy" id="numeracy_1" type="radio" class="custom-control-input" value="No" required="required" {% if content[8] == "No" %}checked="checked"{% endif %}>
             <label for="numeracy_1" class="custom-control-label">No</label>
           </div>
         </div>
@@ -102,15 +102,43 @@
         <label class="col-4">Is the subject counting towards UE?</label>
         <div class="col-8">
           <div class="custom-control custom-radio custom-control-inline">
-            <input name="ue_credits" id="ue_credits_0" type="radio" class="custom-control-input" value="Yes" required="required">
+            <input name="ue_credits" id="ue_credits_0" type="radio" class="custom-control-input" value="Yes" required="required" {% if content[9] == "Yes" %}checked="checked"{% endif %}>
             <label for="ue_credits_0" class="custom-control-label">Yes</label>
           </div>
           <div class="custom-control custom-radio custom-control-inline">
-            <input name="ue_credits" id="ue_credits_1" type="radio" class="custom-control-input" value="No" required="required">
+            <input name="ue_credits" id="ue_credits_1" type="radio" class="custom-control-input" value="No" required="required" {% if content[9] == "No" %}checked="checked"{% endif %}>
             <label for="ue_credits_1" class="custom-control-label">No</label>
           </div>
         </div>
       </div>
+      <!-- Grade -->
+
+      <div class="form-group row">
+          <label class="col-4" for="input_grade">Grade Status</label>
+          <div class="col-4">
+              <label class="radio-inline" for="input_grade-0">
+                  <input type="radio" name="input_grade" id="input_grade-0" value="NA" {% if content[11] == "NA" %}checked="checked"{% endif %}>
+                  Not yet done
+              </label>
+              <label class="radio-inline" for="input_grade-1">
+                  <input type="radio" name="input_grade" id="input_grade-1" value="A" {% if content[11] == "A" %}checked="checked"{% endif %}>
+                  Achieved
+              </label>
+              <label class="radio-inline" for="input_grade-2">
+                  <input type="radio" name="input_grade" id="input_grade-2" value="M" {% if content[11] == "M" %}checked="checked"{% endif %}>
+                  Achieved with Merit
+              </label>
+              <label class="radio-inline" for="input_grade-3">
+                  <input type="radio" name="input_grade" id="input_grade-3" value="E" {% if content[11] == "E" %}checked="checked"{% endif %}>
+                  Achieved with Excellence
+              </label>
+              <label class="radio-inline" for="input_grade-4">
+                  <input type="radio" name="input_grade" id="input_grade-4" value="N" {% if content[11] == "N" %}checked="checked"{% endif %}>
+                  Not Achieved
+              </label>
+          </div>
+      </div>
+
       <div class="form-group row">
           <div class="offset-4 col-8">
             <button name="submit" type="submit" class="btn btn-primary">Submit</button>

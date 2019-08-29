@@ -267,12 +267,16 @@ def load_add_credits(message=False, colour="light"):
 
 
 @app.route('/add-credits', methods=['POST'])
-def add_credits():
+def add_credits(information=[]):
     login_check()
-
-    entry_name = request.form['input_as']
-    entry_grade = request.form['input_grade']
     user_id = session['user_id']
+
+    if information == []:
+        entry_name = request.form['input_as']
+        entry_grade = request.form['input_grade']
+    else:
+        entry_name = information[0]
+        entry_grade = information[1]
 
     print("USER INPUT: {}, {}, {}".format(entry_name, entry_grade, user_id))
 
@@ -295,6 +299,8 @@ def add_credits():
 
     con.commit()
     con.close()
+
+    print("yay")
 
     if result_standard < 1:
         print("ERROR: Some error with the standards on the tables.")
@@ -319,7 +325,9 @@ def add_credits():
 @app.route('/new-standard')
 def load_add_standard(message=False, colour="light"):
     login_check()
-    return render_template("enter_standard.html", alert=message, logged_in=is_logged_in(), session=session, colour=colour)
+    action = "/add-standard"
+    return render_template("enter_standard.html", alert=message, logged_in=is_logged_in(),
+                           session=session, colour=colour, content=[], action=action)
 
 
 @app.route('/add-standard', methods=['POST'])
@@ -384,8 +392,14 @@ def add_standard():
 
         con.commit()
         con.close()
+        print('STATEMENT: Standard added successfully.')
 
-        print('STATEMENT: Input added successfully.')
+        # Grade work
+        grade = request.form['input_grade']
+        if grade != "NA":
+            add_credits([entry_as, grade])
+            print("STATUS: Added grade {} for {} of user {} (ID: {}).".format(entry_as, grade, session['username'], user_id))
+
         return load_add_standard(success, "success")
 
 
@@ -399,14 +413,128 @@ def delete_standard(standard_id):
     con.commit()
     con.close()
 
+    con = create_connection(DATABASE_NAME)
+    cur = con.cursor()
+
+    cur.execute(delete_result_query, standard_id)
+
+    con.commit()
+    con.close()
+
     print('STATEMENT: Standard {} was deleted by {} (ID: {}).'.format(standard_id, session['username'], session['user_id']))
     return redirect('/overview')
 
 
 @app.route('/edit-standard/<standard_id>')
 def edit_standard(standard_id):
+    login_check()
+    action = "/update-standard".format(standard_id)
 
-    return "ajsdkf; ajslf;d"
+    con = create_connection(DATABASE_NAME)
+    cur = con.cursor()
+
+    error = False
+    try:
+        old_version = cur.execute(get_standard_query, (standard_id, session['user_id'],)).fetchall()
+    except IndexError:
+        message = unknown_url
+        colour = "warning"
+        content = [[], [], [], [], [], [], [], [], [], [], [], []]
+        error = True
+        old_version = "error"
+
+    con.commit()
+    con.close()
+
+    con = create_connection(DATABASE_NAME)
+    cur = con.cursor()
+
+    grade_get = True
+    try:
+        standard_name = old_version[0][1]
+    except IndexError:
+        grade_get = False
+        grade = "NA"
+
+    if grade_get == True:
+        try:
+            grade = cur.execute(get_grade_query, (standard_name, session['user_id'],)).fetchall()[0][0]
+        except IndexError:
+            grade = "NA"
+
+    con.commit()
+    con.close()
+
+    if error is True and len(old_version) > 1:
+        return load_add_standard(data_problem, "danger")
+
+    elif error is False:
+        message = False
+        colour = "primary"
+        content = old_version[0]
+        content = content + (grade,)
+
+    print(content)
+    return render_template("enter_standard.html", alert=message, logged_in=is_logged_in(),
+                           session=session, colour=colour, content=content, action=action)
+
+
+@app.route('/update-standard', methods=['POST'])
+def update_standard():
+    login_check()
+
+    entry_as = request.form['standard_name']
+    entry_desc = request.form['description']
+    entry_cred = request.form['credits']
+    entry_lev = request.form['ncea_level']
+    entry_read = request.form['reading']
+    entry_writ = request.form['writing']
+    entry_lit = request.form['literacy']
+    entry_num = request.form['numeracy']
+    entry_ue = request.form['ue_credits']
+    user_id = session['user_id']
+
+    print("USER INPUT: {}, {}, {}, {}, {}, {}, {}, {}, {}, {}".format
+          (entry_as, entry_desc, entry_cred, entry_lev, entry_read, entry_writ, entry_lit, entry_num, entry_ue, user_id))
+
+    # Check if input valid:
+    # Check if credit number above / equal to 0, if int.
+    try:
+        if 0 > int(entry_cred):
+            return load_add_standard(credit_value, "warning")
+    except TypeError or ValueError:
+        print("ERROR: Integer input (credit number) is not written in integers.")
+        return load_add_standard(int_input, "warning")
+
+    # Check if AS number too large / too small, if int.
+    try:
+        if int(entry_as) <= 0 or 2147483647 < int(entry_as):
+            return load_add_standard(as_value, "warning")
+
+    except TypeError or ValueError:
+        print("ERROR: Integer input (AS number) is not written in integers.")
+        return load_add_standard(int_input, "warning")
+
+    # Check if the AS number already exists
+    con = create_connection(DATABASE_NAME)
+    cur = con.cursor()
+
+    cur.execute(count_rows_credit_entry, (entry_as, user_id, ))
+    result_standard = cur.fetchall()
+
+    con.commit()
+    con.close()
+
+    result_standard = result_standard[0][0]
+    if result_standard > 0:
+        print("ERROR: AS Number exists already.")
+        return load_add_standard(as_input, "warning")
+
+    else:
+        # Updates standard
+        entry_data = (entry_as, entry_desc, entry_cred, entry_lev, entry_read, entry_writ, entry_lit)
+
+    return "uwu"
 
 
 @app.route('/register')
@@ -670,6 +798,25 @@ def delete_user_data():
 
     print("STATUS: All data of {} (ID: {}) was deleted.".format(session['username'], session['user_id']))
     return settings_page(success, 'success')
+
+
+@app.route('/loop')
+def loop_usage_thing():
+    con = create_connection(DATABASE_NAME)
+    cur = con.cursor()
+    data = cur.execute(select_all).fetchall()
+    con.commit()
+    con.close()
+
+    list_of_standards = [['Standard Name:', ], ['Description:', ], ['Credits:', ], ['NCEA Level: ',]]
+
+    for item in data:
+        list_of_standards[0].append(item[0])
+        list_of_standards[1].append(item[1])
+        list_of_standards[2].append(item[2])
+        list_of_standards[3].append(item[3])
+    print(list_of_standards)
+    return render_template("all_standards.html", the_list=list_of_standards)
 
 
 if __name__ == "__main__":

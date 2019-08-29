@@ -111,6 +111,14 @@ new_standard_entry_query = """INSERT INTO standard(standard_id, standard_name, d
                               reading, writing, literacy, numeracy, ue_credits, standard_user)
                               VALUES(NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"""
 delete_standard_query = """DELETE FROM standard WHERE standard_id = ?;"""
+delete_result_query = """DELETE FROM result WHERE as_id = ?;"""
+
+get_standard_query = """SELECT * FROM standard
+                        WHERE standard_id = ?
+                        AND standard_user = ?;"""
+get_grade_query = """SELECT grade FROM result
+                     WHERE as_id = ?
+                     AND result_user = ?;"""
 
 # User Related Queries
 create_user = """INSERT INTO user(user_id, username, password) 
@@ -118,6 +126,7 @@ create_user = """INSERT INTO user(user_id, username, password)
 find_user = """SELECT user_id, username, password
                 FROM user
                 WHERE username = ?;"""
+select_all = """SELECT standard_name, description, credits, ncea_level FROM standard;"""
 
 setting_change_password = """UPDATE user SET password = ? WHERE user_id = ?;"""
 setting_change_username = """UPDATE user SET username = ? WHERE user_id = ?;"""
