@@ -107,6 +107,7 @@ def get_credits(name, query):
 
 
 def credits_numbers():
+    """collects the credits from all grades and puts them together in one package"""
     all_credits = get_credits("All", get_credits_all_query)
     l3_credits = get_credits("Level 3", get_credits_l3_query)
     l2_credits = get_credits("Level 2", get_credits_12_query)
@@ -121,6 +122,7 @@ def credits_numbers():
 
 
 def get_categories(data, number):
+    """counts values in a list that have a 'Yes' attached"""
     outcome = 0
     for standard in data:
         if standard[number] == "Yes":
@@ -130,6 +132,7 @@ def get_categories(data, number):
 
 
 def check_password(user_input, user_session=session):
+    """compares user-input password with database hash and returns adequate response."""
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
     user_data = cur.execute(find_user, (user_session['username'],)).fetchall()
@@ -157,6 +160,8 @@ def check_password(user_input, user_session=session):
 
 @app.route('/')
 def main():
+    """renders home.html, if the user is logged in"""
+
     if is_logged_in() == False:
         return redirect('/login')
 
@@ -168,6 +173,8 @@ def main():
 
 @app.route('/login')
 def login_page(message=False, colour="light"):
+    """renders login page, unless the user is logged in"""
+
     if is_logged_in() is False:
         return render_template("login.html", message=message, colour=colour)
     else:
@@ -176,6 +183,8 @@ def login_page(message=False, colour="light"):
 
 @app.route('/contact')
 def contact():
+    """renders contact page, with correct base template"""
+
     if is_logged_in() != False:
         base = "base.html"
     else:
@@ -185,6 +194,8 @@ def contact():
 
 @app.route('/gallery')
 def gallery():
+    """renders gallery page, with correct base template"""
+
     if is_logged_in() != False:
         base = "base.html"
     else:
@@ -194,6 +205,8 @@ def gallery():
 
 @app.route('/overview')
 def overview():
+    """renders overview including data displayed"""
+
     if is_logged_in() == False:
         return redirect('/login')
 
@@ -211,9 +224,9 @@ def overview():
     credits_package = credits_numbers()
 
     # LEVEL ENDORSEMENT ["level", To E Endorsement, To M Endorsement]
-    endorsement_data = [["l3", 50-credits_package[1][2], 50-credits_package[1][3]-credits_package[1][2]],
-                        ["l2", 50-credits_package[2][2], 50-credits_package[2][3]-credits_package[2][2]],
-                        ["l1", 50-credits_package[3][2], 50-credits_package[3][3]-credits_package[3][2]]]
+    endorsement_data = [["l3", 50 - credits_package[1][2], 50 - credits_package[1][3] - credits_package[1][2]],
+                        ["l2", 50 - credits_package[2][2], 50 - credits_package[2][3] - credits_package[2][2]],
+                        ["l1", 50 - credits_package[3][2], 50 - credits_package[3][3] - credits_package[3][2]]]
 
     for level in endorsement_data:
         if level[1] < 0:
@@ -231,7 +244,8 @@ def overview():
     con.commit()
     con.close()
 
-    curriculum_stuff = [get_categories(lit_num_data, 1), get_categories(lit_num_data, 2), get_categories(lit_num_data, 3), get_categories(lit_num_data, 4)]
+    curriculum_stuff = [get_categories(lit_num_data, 1), get_categories(lit_num_data, 2),
+                        get_categories(lit_num_data, 3), get_categories(lit_num_data, 4)]
 
     return render_template("overview.html",
                            standards=standards, results=credits_package, endorsement=endorsement_data,
@@ -274,9 +288,11 @@ def add_credits(information=[]):
     if information == []:
         entry_name = request.form['input_as']
         entry_grade = request.form['input_grade']
+
     else:
         entry_name = information[0]
         entry_grade = information[1]
+        entry_id = information[2]
 
     print("USER INPUT: {}, {}, {}".format(entry_name, entry_grade, user_id))
 
@@ -284,26 +300,22 @@ def add_credits(information=[]):
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
 
-    cur.execute(count_rows_credit_entry, (entry_name, user_id,))
+    cur.execute(count_rows_credit_entry, (entry_name[0][0], user_id))
     result_standard = cur.fetchall()
     result_standard = result_standard[0][0]
 
     con.commit()
-    con.close()
-    con = create_connection(DATABASE_NAME)
     cur = con.cursor()
 
-    cur.execute(count_rows_new_entry, (entry_name, user_id))
+    cur.execute(count_rows_new_entry, (entry_name[0][0], user_id))
     result_results = cur.fetchall()
     result_results = result_results[0][0]
 
     con.commit()
     con.close()
 
-    print("yay")
-
-    if result_standard < 1:
-        print("ERROR: Some error with the standards on the tables.")
+    if result_standard < 0:
+        print("ERROR: Some error with the standards on the tables. You may already have a standard with that name.")
         return load_add_credits(data_used, "alert")
 
     elif result_results >= 1:
@@ -313,12 +325,13 @@ def add_credits(information=[]):
     else:
         con = create_connection(DATABASE_NAME)
         entry_data = (entry_name, entry_grade, user_id)
-
+        print(entry_data)
         cur = con.cursor()
         cur.execute(new_credit_entry_query, entry_data)
 
         con.commit()
         con.close()
+
         return load_add_credits(success, "success")
 
 
@@ -331,7 +344,7 @@ def load_add_standard(message=False, colour="light"):
 
 
 @app.route('/add-standard', methods=['POST'])
-def add_standard():
+def do_add_standard():
     login_check()
 
     entry_as = request.form['standard_name']
@@ -346,7 +359,8 @@ def add_standard():
     user_id = session['user_id']
 
     print("USER INPUT: {}, {}, {}, {}, {}, {}, {}, {}, {}, {}".format
-          (entry_as, entry_desc, entry_cred, entry_lev, entry_read, entry_writ, entry_lit, entry_num, entry_ue, user_id))
+          (entry_as, entry_desc, entry_cred, entry_lev, entry_read, entry_writ, entry_lit, entry_num, entry_ue,
+           user_id))
 
     # Check if input valid:
     # Check if credit number above / equal to 0, if int.
@@ -370,20 +384,22 @@ def add_standard():
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
 
-    cur.execute(count_rows_credit_entry, (entry_as, user_id, ))
+    cur.execute(count_rows_credit_entry, (entry_as, user_id,))
     result_standard = cur.fetchall()
 
     con.commit()
     con.close()
 
     result_standard = result_standard[0][0]
-    if result_standard > 0:
+    if result_standard > 1:
         print("ERROR: AS Number exists already.")
         return load_add_standard(as_input, "warning")
 
     else:
         # Creates standard
-        entry_data = (entry_as, entry_desc, entry_cred, entry_lev, entry_read, entry_writ, entry_lit, entry_num, entry_ue, user_id)
+        entry_data = (
+            entry_as, entry_desc, entry_cred, entry_lev, entry_read, entry_writ, entry_lit, entry_num, entry_ue,
+            user_id)
 
         con = create_connection(DATABASE_NAME)
         cur = con.cursor()
@@ -396,15 +412,25 @@ def add_standard():
 
         # Grade work
         grade = request.form['input_grade']
+
+        con = create_connection(DATABASE_NAME)
+        cur = con.cursor()
+
+        entry_id = cur.execute(get_standard_id, (entry_as, user_id,)).fetchall()[0][0]
+
+        con.commit()
+        con.close()
+
         if grade != "NA":
-            add_credits([entry_as, grade])
-            print("STATUS: Added grade {} for {} of user {} (ID: {}).".format(entry_as, grade, session['username'], user_id))
+            add_credits([entry_as, grade, entry_id,])
+            print("STATUS: Added grade {} for {} of user {} (ID: {}).".format(entry_id, grade, session['username'],
+                                                                              user_id))
 
-        return load_add_standard(success, "success")
-
-
-@app.route('/delete-standard/<standard_id>')
-def delete_standard(standard_id):
+        return load_add_standard(success, "success")                              
+                                                                                  
+                                                                                  
+@app.route('/delete-standard/<standard_id>')                                      
+def delete_standard(standard_id):                                                 
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
 
@@ -421,14 +447,15 @@ def delete_standard(standard_id):
     con.commit()
     con.close()
 
-    print('STATEMENT: Standard {} was deleted by {} (ID: {}).'.format(standard_id, session['username'], session['user_id']))
+    print('STATEMENT: Standard {} was deleted by {} (ID: {}).'.format(standard_id, session['username'],
+                                                                      session['user_id']))
     return redirect('/overview')
 
 
 @app.route('/edit-standard/<standard_id>')
 def edit_standard(standard_id):
     login_check()
-    action = "/update-standard".format(standard_id)
+    action = "/update-standard/{}".format(standard_id)
 
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
@@ -436,6 +463,7 @@ def edit_standard(standard_id):
     error = False
     try:
         old_version = cur.execute(get_standard_query, (standard_id, session['user_id'],)).fetchall()
+        print(old_version)
     except IndexError:
         message = unknown_url
         colour = "warning"
@@ -449,18 +477,18 @@ def edit_standard(standard_id):
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
 
-    grade_get = True
-    try:
-        standard_name = old_version[0][1]
-    except IndexError:
-        grade_get = False
-        grade = "NA"
+    # Determine whenever the standard has a grade attached
+    # grade_get = True
+    # try:
+    #     standard_name = old_version[0][1]
+    # except IndexError:
+    #     grade_get = False
+    #     grade = "NA"
 
-    if grade_get == True:
-        try:
-            grade = cur.execute(get_grade_query, (standard_name, session['user_id'],)).fetchall()[0][0]
-        except IndexError:
-            grade = "NA"
+    try:
+        grade = cur.execute(get_grade_query, (standard_id, session['user_id'],)).fetchall()[0][0]
+    except IndexError:
+        grade = "NA"
 
     con.commit()
     con.close()
@@ -473,14 +501,14 @@ def edit_standard(standard_id):
         colour = "primary"
         content = old_version[0]
         content = content + (grade,)
-
     print(content)
+
     return render_template("enter_standard.html", alert=message, logged_in=is_logged_in(),
                            session=session, colour=colour, content=content, action=action)
 
 
-@app.route('/update-standard', methods=['POST'])
-def update_standard():
+@app.route('/update-standard/<standard_id>', methods=['POST'])
+def update_standard(standard_id):
     login_check()
 
     entry_as = request.form['standard_name']
@@ -493,9 +521,6 @@ def update_standard():
     entry_num = request.form['numeracy']
     entry_ue = request.form['ue_credits']
     user_id = session['user_id']
-
-    print("USER INPUT: {}, {}, {}, {}, {}, {}, {}, {}, {}, {}".format
-          (entry_as, entry_desc, entry_cred, entry_lev, entry_read, entry_writ, entry_lit, entry_num, entry_ue, user_id))
 
     # Check if input valid:
     # Check if credit number above / equal to 0, if int.
@@ -510,7 +535,6 @@ def update_standard():
     try:
         if int(entry_as) <= 0 or 2147483647 < int(entry_as):
             return load_add_standard(as_value, "warning")
-
     except TypeError or ValueError:
         print("ERROR: Integer input (AS number) is not written in integers.")
         return load_add_standard(int_input, "warning")
@@ -519,29 +543,78 @@ def update_standard():
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
 
-    cur.execute(count_rows_credit_entry, (entry_as, user_id, ))
+    cur.execute(count_rows_credit_entry, (entry_as, user_id,))
     result_standard = cur.fetchall()
 
     con.commit()
     con.close()
 
     result_standard = result_standard[0][0]
-    if result_standard > 0:
+    if result_standard > 1:
         print("ERROR: AS Number exists already.")
         return load_add_standard(as_input, "warning")
 
     else:
         # Updates standard
-        entry_data = (entry_as, entry_desc, entry_cred, entry_lev, entry_read, entry_writ, entry_lit)
+        entry_data = (entry_as, entry_desc, entry_cred, entry_lev, entry_read, entry_writ, entry_lit, entry_num,
+                      entry_ue, standard_id, user_id)
 
-    return "uwu"
+        con = create_connection(DATABASE_NAME)
+        cur = con.cursor()
+
+        cur.execute(update_standard_query, entry_data)
+
+        con.commit()
+        con.close()
+
+    con = create_connection(DATABASE_NAME)
+    cur = con.cursor()
+
+    new_standard = cur.execute(get_standard_query, (standard_id, user_id)).fetchall()[0]
+    print("new data in base", new_standard)
+    con.commit()
+    con.close()
+
+    grade = request.form['input_grade']
+
+    if grade == "NA":
+        return redirect('/overview')
+
+    # COUNT ROWS IN RESULTS WHERE STANDARD_ID
+
+    con = create_connection(DATABASE_NAME)
+    cur = con.cursor()
+
+    row_count = cur.execute(count_rows_new_entry, (standard_id, user_id)).fetchall()[0][0]
+
+    con.commit()
+    con.close()
+    print("Row Count: ", row_count)
+    if row_count == 0:
+        pass
+    #     return add_credits([entry_as, grade, standard_id])
+
+    elif row_count == 1:
+        # Update grade in the database
+        con = create_connection(DATABASE_NAME)
+        cur = con.cursor()
+
+        cur.execute(update_grade_query, (grade, standard_id, user_id))
+
+        con.commit()
+        con.close()
+        return redirect('/overview')
+    else:
+
+        return "error uwu"
 
 
 @app.route('/register')
 def register(message=False, colour="primary"):
     if is_logged_in() is not False:
         return redirect('/')
-    return render_template("register.html", error_message=message, logged_in=is_logged_in(), session=session, colour=colour)
+    return render_template("register.html", error_message=message, logged_in=is_logged_in(), session=session,
+                           colour=colour)
 
 
 @app.route('/create-new-user', methods=['POST'])
@@ -808,7 +881,7 @@ def loop_usage_thing():
     con.commit()
     con.close()
 
-    list_of_standards = [['Standard Name:', ], ['Description:', ], ['Credits:', ], ['NCEA Level: ',]]
+    list_of_standards = [['Standard Name:', ], ['Description:', ], ['Credits:', ], ['NCEA Level: ', ]]
 
     for item in data:
         list_of_standards[0].append(item[0])

@@ -22,6 +22,7 @@ create_table_result = """CREATE TABLE IF NOT EXISTS result(
                             grade text NOT NULL,
                             result_user INTEGER NOT NULL,
                             FOREIGN KEY(result_user) REFERENCES user(user_id)
+                            FOREIGN KEY(as_id) REFERENCES standard(standard_id)
                             );
                             """
 
@@ -42,7 +43,7 @@ test_data_standard = """INSERT INTO standard (standard_id, standard_name, descri
                         (NULL, 91101, 'Produce a selection of crafted and controlled writing', 
                         6, 2, 'Yes', 'No', 'Yes', 'No', 'Yes', 1);"""
 test_data_result = """INSERT INTO result (entry_id, as_id, grade, result_user) 
-                        VALUES(NULL, 91215, 'M', 1), (NULL, 91367, 'E', 1);"""
+                        VALUES(NULL, 1, 'M', 1), (NULL, 91367, 'E', 1);"""
 test_data_user = """INSERT INTO user (user_id, username, password)
                     VALUES (NULL, 'testuser1', 'test1'), (NULL, 'testuser2', 'test2');"""
 
@@ -67,30 +68,30 @@ count_rows_username = """SELECT COUNT(*) FROM user
 # Get Credits queries
 get_credits_all_query = """SELECT credits, grade
             FROM result JOIN standard
-            ON as_id = standard_name
+            ON as_id = standard_id
             WHERE result_user = ?;"""
 get_credits_l3_query = """SELECT credits, grade
             FROM result JOIN standard
-            ON as_id = standard_name
+            ON as_id = standard_id
             AND ncea_level = 3
             AND result_user = ?;"""
 get_credits_12_query = """SELECT credits, grade
             FROM result JOIN standard
-            ON as_id = standard_name
+            ON as_id = standard_id
             AND ncea_level = 2
             AND result_user = ?;"""
 get_credits_l1_query = """SELECT credits, grade
             FROM result JOIN standard
-            ON as_id = standard_name
+            ON as_id = standard_id
             AND ncea_level = 1
             AND result_user = ?;"""
 
 get_all_done_standards = """SELECT standard_id, grade, standard_name, description, credits, ncea_level,numeracy, literacy,  reading, writing, ue_credits
                             FROM standard JOIN result
-                            on as_id = standard_name
+                            on as_id = standard_id
                             AND standard_user = ?;"""
 
-get_all_standard_names = """SELECT standard_name, description
+get_all_standard_names = """SELECT standard_id, standard_name, description
                             FROM standard
                             WHERE standard_user = ?;"""
 
@@ -116,7 +117,27 @@ delete_result_query = """DELETE FROM result WHERE as_id = ?;"""
 get_standard_query = """SELECT * FROM standard
                         WHERE standard_id = ?
                         AND standard_user = ?;"""
+get_standard_id = """SELECT standard_id FROM standard  
+                        WHERE standard_name = ?
+                        AND standard_user = ?;"""
 get_grade_query = """SELECT grade FROM result
+                     WHERE as_id = ?
+                     AND result_user = ?;"""
+
+update_standard_query = """UPDATE standard
+                     SET standard_name = ?
+                     AND description = ?
+                     AND credits = ?
+                     AND ncea_level = ?
+                     AND reading = ?
+                     AND writing = ?
+                     AND literacy = ?
+                     AND numeracy = ?
+                     AND ue_credits = ?
+                     WHERE standard_id = ?
+                     AND standard_user = ?;"""
+update_grade_query = """UPDATE result
+                     SET grade = ?
                      WHERE as_id = ?
                      AND result_user = ?;"""
 

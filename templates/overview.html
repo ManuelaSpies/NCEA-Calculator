@@ -12,40 +12,40 @@
     </div>
     <div class="">
         <h2>NCEA Progress</h2>
-{#        <div class="tabber">#}
-{#            <div class="btn-group btn-group-justified">#}
-{#                <button class="btn btn-default btn-custom" type="button" onclick="openChart('all')">All#}
-{#                    Credits#}
-{#                </button>#}
-{#                <button class="btn btn-default btn-custom" type="button" onclick="openChart('l3')">#}
-{#                    Level 3#}
-{#                </button>#}
-{#                <button class="btn btn-default btn-custom" type="button" onclick="openChart('l2')">#}
-{#                    Level 2#}
-{#                </button>#}
-{#                <button class="btn btn-default btn-custom" type="button" onclick="openChart('l1')">#}
-{#                    Level 1#}
-{#                </button>#}
-{#            </div>#}
-{##}
-{##}
-{#            <div id="all" class="piechart-block">#}
-{#                <div class="piechart" id="all_chart"></div>#}
-{#            </div>#}
-{##}
-{#            <div id="l3" class="piechart-block" style="display:none;">#}
-{#                <div class="piechart" id="l3_chart"></div>#}
-{#            </div>#}
-{##}
-{#            <div id="l2" class="piechart-block" style="display:none;">#}
-{#                <div class="piechart" id="l2_chart"></div>#}
-{#            </div>#}
-{##}
-{#            <div id="l1" class="piechart-block" style="display:none;">#}
-{#                <div class="piechart" id="l1_chart"></div>#}
-{#            </div>#}
-{##}
-{#        </div>#}
+        {#        <div class="tabber">#}
+        {#            <div class="btn-group btn-group-justified">#}
+        {#                <button class="btn btn-default btn-custom" type="button" onclick="openChart('all')">All#}
+        {#                    Credits#}
+        {#                </button>#}
+        {#                <button class="btn btn-default btn-custom" type="button" onclick="openChart('l3')">#}
+        {#                    Level 3#}
+        {#                </button>#}
+        {#                <button class="btn btn-default btn-custom" type="button" onclick="openChart('l2')">#}
+        {#                    Level 2#}
+        {#                </button>#}
+        {#                <button class="btn btn-default btn-custom" type="button" onclick="openChart('l1')">#}
+        {#                    Level 1#}
+        {#                </button>#}
+        {#            </div>#}
+        {##}
+        {##}
+        {#            <div id="all" class="piechart-block">#}
+        {#                <div class="piechart" id="all_chart"></div>#}
+        {#            </div>#}
+        {##}
+        {#            <div id="l3" class="piechart-block" style="display:none;">#}
+        {#                <div class="piechart" id="l3_chart"></div>#}
+        {#            </div>#}
+        {##}
+        {#            <div id="l2" class="piechart-block" style="display:none;">#}
+        {#                <div class="piechart" id="l2_chart"></div>#}
+        {#            </div>#}
+        {##}
+        {#            <div id="l1" class="piechart-block" style="display:none;">#}
+        {#                <div class="piechart" id="l1_chart"></div>#}
+        {#            </div>#}
+        {##}
+        {#        </div>#}
 
         <table class="table table-hover table-condensed">
             <tr>
@@ -122,33 +122,33 @@
                         <a href="/edit-standard/{{ row[0] }}">Edit</a>
                     </td>
                 </tr>
-            {%  endfor %}
+            {% endfor %}
         </table>
     </div>
 {% endblock %}
 
 {% block footer %}
-{#    {% for chart in results %}#}
-{#        <script>#}
-{#            // Load google charts#}
-{#            google.charts.load('current', {'packages': ['corechart']});#}
-{#            google.charts.setOnLoadCallback(drawChart);#}
-{##}
-{#            // Draw the chart and set the chart values#}
-{#            function drawChart() {#}
-{#                var data = google.visualization.arrayToDataTable([#}
-{#                    ['Grade', 'Credits'],#}
-{#                    ['Excellence', {{ chart[2] }}],#}
-{#                    ['Merit', {{ chart[3] }}],#}
-{#                    ['Achieved', {{ chart[4] }}],#}
-{#                    ['Left', {{ chart[5] }}]#}
-{##}
-{#                ]);#}
-{#                var options = {'title': '{{ chart[0] }}', 'height': 200, 'width': 400};#}
-{##}
-{#                var chart = new google.visualization.PieChart(document.getElementById('{{ chart[6] }}_chart'));#}
-{#                chart.draw(data, options);#}
-{#            }#}
-{#        </script>#}
-{#    {% endfor %}#}
+    {#    {% for chart in results %}#}
+    {#        <script>#}
+    {#            // Load google charts#}
+    {#            google.charts.load('current', {'packages': ['corechart']});#}
+    {#            google.charts.setOnLoadCallback(drawChart);#}
+    {##}
+    {#            // Draw the chart and set the chart values#}
+    {#            function drawChart() {#}
+    {#                var data = google.visualization.arrayToDataTable([#}
+    {#                    ['Grade', 'Credits'],#}
+    {#                    ['Excellence', {{ chart[2] }}],#}
+    {#                    ['Merit', {{ chart[3] }}],#}
+    {#                    ['Achieved', {{ chart[4] }}],#}
+    {#                    ['Left', {{ chart[5] }}]#}
+    {##}
+    {#                ]);#}
+    {#                var options = {'title': '{{ chart[0] }}', 'height': 200, 'width': 400};#}
+    {##}
+    {#                var chart = new google.visualization.PieChart(document.getElementById('{{ chart[6] }}_chart'));#}
+    {#                chart.draw(data, options);#}
+    {#            }#}
+    {#        </script>#}
+    {#    {% endfor %}#}
 {% endblock %}
