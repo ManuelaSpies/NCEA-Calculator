@@ -7,11 +7,12 @@
 {% endblock %}
 
 {% block body %}
-    <div class="piechart_block">
-        <!-- Here, the pie charts go -->
-    </div>
     <div class="">
         <h2>NCEA Progress</h2>
+            {% if alert != False %}
+                <div class="alert alert-{{ colour }}">{{ alert }}</div>
+            {% endif %}
+        {# Unfinished: pie charts #}
         {#        <div class="tabber">#}
         {#            <div class="btn-group btn-group-justified">#}
         {#                <button class="btn btn-default btn-custom" type="button" onclick="openChart('all')">All#}

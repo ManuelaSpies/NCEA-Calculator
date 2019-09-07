@@ -1,3 +1,4 @@
+# Importing modules, ...
 from flask import Flask, render_template, request, redirect, session
 import sqlite3
 from sqlite3 import Error
@@ -5,17 +6,15 @@ from import_data import *
 from import_messages import *
 from flask_bcrypt import Bcrypt
 
+# constants & app-wide variables
 DATABASE_NAME = "credit.db"
-
 app = Flask(__name__)
-
 flask_bcrypt = Bcrypt(app)
-
 app.secret_key = "コレは秘密다. Jingle bells Käsekuchen. 4729371927"
 
 
 def is_logged_in():
-    # initialise_tables(create_connection(DATABASE_NAME))
+    """this function checks if the user is logged in or not, and returns a True/False depending on that"""
     try:
         print("Session:", session['username'])
         return session['user_id'] != ""
@@ -25,6 +24,7 @@ def is_logged_in():
 
 
 def login_check():
+    """this function checks if a user is logged in. If not, the function redirects them to the login page"""
     if is_logged_in() == False:
         return login_page(not_logged_in, "primary")
     else:
@@ -63,8 +63,6 @@ def initialise_tables(con):
     execute_query(con, create_table_standard)
     execute_query(con, create_table_result)
 
-    print("STATUS: initialise_tables() completed.")
-
 
 def get_credits(name, query):
     """counts and sorts all existing credits by grade."""
@@ -81,6 +79,7 @@ def get_credits(name, query):
     m_total = 0
     a_total = 0
 
+    # Count the amount of credits by grade.
     for standard in entries:
         if standard[1] == "E":
             e_total += standard[0]
@@ -89,6 +88,7 @@ def get_credits(name, query):
         elif standard[1] == "A":
             a_total += standard[0]
 
+    # Sets the amount of credits left to achieve level to 80 (if Level 1), 60 (Level 2 & 3) or zero (if it's a total)
     if name == "Level 1":
         goal = 80
     elif name == "All":
@@ -102,7 +102,6 @@ def get_credits(name, query):
     else:
         left = 0
 
-    print("STATUS: get_credits completed for {}.".format(name))
     return [name, total, e_total, m_total, a_total, left]
 
 
@@ -113,6 +112,7 @@ def credits_numbers():
     l2_credits = get_credits("Level 2", get_credits_12_query)
     l1_credits = get_credits("Level 1", get_credits_l1_query)
 
+    # Adds the category of credits
     all_credits.append('all')
     l3_credits.append('l3')
     l2_credits.append('l2')
@@ -161,7 +161,6 @@ def check_password(user_input, user_session=session):
 @app.route('/')
 def main():
     """renders home.html, if the user is logged in"""
-
     if is_logged_in() == False:
         return redirect('/login')
 
@@ -174,7 +173,6 @@ def main():
 @app.route('/login')
 def login_page(message=False, colour="light"):
     """renders login page, unless the user is logged in"""
-
     if is_logged_in() is False:
         return render_template("login.html", message=message, colour=colour)
     else:
@@ -184,7 +182,6 @@ def login_page(message=False, colour="light"):
 @app.route('/contact')
 def contact():
     """renders contact page, with correct base template"""
-
     if is_logged_in() != False:
         base = "base.html"
     else:
@@ -195,7 +192,6 @@ def contact():
 @app.route('/gallery')
 def gallery():
     """renders gallery page, with correct base template"""
-
     if is_logged_in() != False:
         base = "base.html"
     else:
@@ -204,26 +200,22 @@ def gallery():
 
 
 @app.route('/overview')
-def overview():
+def overview(message=False, colour="light"):
     """renders overview including data displayed"""
-
     if is_logged_in() == False:
         return redirect('/login')
 
-    # LIST OF ALL COMPLETED STANDARDS
+    # fetches list of all completed credits
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
-
     cur.execute(get_all_done_standards, (session['user_id'],))
     standards = cur.fetchall()
-
     con.commit()
-    con.close()
 
-    # LIST OF ALL CREDITS BY GRADE / LEVEL
+    # Stores all credit information in credits_package
     credits_package = credits_numbers()
 
-    # LEVEL ENDORSEMENT ["level", To E Endorsement, To M Endorsement]
+    # Creates list holding the endorsement information
     endorsement_data = [["l3", 50 - credits_package[1][2], 50 - credits_package[1][3] - credits_package[1][2]],
                         ["l2", 50 - credits_package[2][2], 50 - credits_package[2][3] - credits_package[2][2]],
                         ["l1", 50 - credits_package[3][2], 50 - credits_package[3][3] - credits_package[3][2]]]
@@ -234,13 +226,10 @@ def overview():
         if level[2] < 0:
             level[2] = 0
 
-    # LIT, NUM, ...
-    con = create_connection(DATABASE_NAME)
+    # Fetches and stores all information regarding literacy, numeracy, UE etc. (All Yes/No ones).
     cur = con.cursor()
-
     cur.execute(get_all_lit_num_things, (session['user_id'],))
     lit_num_data = cur.fetchall()
-
     con.commit()
     con.close()
 
@@ -249,42 +238,42 @@ def overview():
 
     return render_template("overview.html",
                            standards=standards, results=credits_package, endorsement=endorsement_data,
-                           litnum=curriculum_stuff, logged_in=is_logged_in(), session=session)
+                           litnum=curriculum_stuff, logged_in=is_logged_in(), session=session,
+                           message=message, colour=colour)
 
 
 @app.route('/new-achievement')
 def load_add_credits(message=False, colour="light"):
+    """renders page to enter a grade, if there are standards"""
     login_check()
 
+    # Checks if there are any standards for the user
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
-
     standards_exist = cur.execute(count_rows_standard_user, (session['user_id'],)).fetchall()[0][0] > 0
-
     con.commit()
-    con.close()
 
+    # If the user has standards, fetches all standards and renders page, or redirects to the page to /add-standard
     if standards_exist:
-        con = create_connection(DATABASE_NAME)
         cur = con.cursor()
-
         cur.execute(get_all_standard_names, (session['user_id'],))
         asnumbers = cur.fetchall()
-
         con.commit()
         con.close()
         return render_template("enter_credits.html", as_numbers=asnumbers, alert=message,
                                logged_in=is_logged_in(), session=session, colour=colour)
     else:
-        print("ERROR: User has no standards; redirected towards enter standards page.")
+        con.close()
         return load_add_standard(data_missing, "danger")
 
 
 @app.route('/add-credits', methods=['POST'])
 def add_credits(information=[]):
+    """adds result, stored in information, to the database"""
     login_check()
     user_id = session['user_id']
 
+    # determines if the input comes from a form or was passed on, and stores data according to that
     if information == []:
         entry_name = request.form['input_as']
         entry_grade = request.form['input_grade']
@@ -294,41 +283,38 @@ def add_credits(information=[]):
         entry_grade = information[1]
         entry_id = information[2]
 
-    print("USER INPUT: {}, {}, {}".format(entry_name, entry_grade, user_id))
-
-    # Check if input valid.
+    # Checks if the standard (AS number) exists
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
-
     cur.execute(count_rows_credit_entry, (entry_name[0][0], user_id))
     result_standard = cur.fetchall()
     result_standard = result_standard[0][0]
-
     con.commit()
-    cur = con.cursor()
 
+    # Checks if there already is a result
+    cur = con.cursor()
     cur.execute(count_rows_new_entry, (entry_name[0][0], user_id))
     result_results = cur.fetchall()
     result_results = result_results[0][0]
-
     con.commit()
-    con.close()
 
-    if result_standard < 0:
-        print("ERROR: Some error with the standards on the tables. You may already have a standard with that name.")
+    # Error & appropriate redirect if the standard doesn't exist.
+    if result_standard <= 0:
+        print("USER ERROR: No such standard exists.")
+        con.close()
         return load_add_credits(data_used, "alert")
 
+    # Error & appropriate redirect if there is a result.
     elif result_results >= 1:
-        print("USER: Standard already entered.")
+        print("USER ERROR: Standard grade already entered.")
+        con.close()
         return load_add_credits(data_used, "warning")
 
+    # Adds result to database
     else:
-        con = create_connection(DATABASE_NAME)
         entry_data = (entry_name, entry_grade, user_id)
-        print(entry_data)
         cur = con.cursor()
         cur.execute(new_credit_entry_query, entry_data)
-
         con.commit()
         con.close()
 
@@ -337,16 +323,20 @@ def add_credits(information=[]):
 
 @app.route('/new-standard')
 def load_add_standard(message=False, colour="light"):
+    """renders page to add a new standard"""
     login_check()
     action = "/add-standard"
+
     return render_template("enter_standard.html", alert=message, logged_in=is_logged_in(),
                            session=session, colour=colour, content=[], action=action)
 
 
 @app.route('/add-standard', methods=['POST'])
 def do_add_standard():
+    """adds a new standard, or redirects with appropriate error"""
     login_check()
 
+    # stores data from the form
     entry_as = request.form['standard_name']
     entry_desc = request.form['description']
     entry_cred = request.form['credits']
@@ -358,125 +348,103 @@ def do_add_standard():
     entry_ue = request.form['ue_credits']
     user_id = session['user_id']
 
-    print("USER INPUT: {}, {}, {}, {}, {}, {}, {}, {}, {}, {}".format
-          (entry_as, entry_desc, entry_cred, entry_lev, entry_read, entry_writ, entry_lit, entry_num, entry_ue,
-           user_id))
-
-    # Check if input valid:
-    # Check if credit number above / equal to 0, if int.
+    # Checks if credit number above or equal to 0 and if it's an integer, or raises appropriate error
     try:
         if 0 > int(entry_cred):
+            print("USER ERROR: AS Number not above or equal to zero.")
             return load_add_standard(credit_value, "warning")
     except TypeError or ValueError:
-        print("ERROR: Integer input (credit number) is not written in integers.")
+        print("USER ERROR: AS Number not written as integer.")
         return load_add_standard(int_input, "warning")
 
-    # Check if AS number too large / too small, if int.
+    # Checks if AS number too large or too small and if it's an integer, or raises appropriate error.
     try:
         if int(entry_as) <= 0 or 2147483647 < int(entry_as):
+            print("USER ERROR: AS Number outside boundaries.")
             return load_add_standard(as_value, "warning")
-
     except TypeError or ValueError:
-        print("ERROR: Integer input (AS number) is not written in integers.")
+        print("ERROR: AS number not written as integer.")
         return load_add_standard(int_input, "warning")
 
-    # Check if the AS number already exists
+    # Checks if the AS number already exists
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
-
     cur.execute(count_rows_credit_entry, (entry_as, user_id,))
     result_standard = cur.fetchall()
-
-    con.commit()
-    con.close()
-
     result_standard = result_standard[0][0]
-    if result_standard > 1:
-        print("ERROR: AS Number exists already.")
+    con.commit()
+
+    # Checks if the standard number is already used by the user.
+    if result_standard >= 1:
+        print("USER ERROR: AS Number exists already.")
+        con.close()
         return load_add_standard(as_input, "warning")
 
     else:
-        # Creates standard
+        # adds standard to database
         entry_data = (
             entry_as, entry_desc, entry_cred, entry_lev, entry_read, entry_writ, entry_lit, entry_num, entry_ue,
             user_id)
-
-        con = create_connection(DATABASE_NAME)
         cur = con.cursor()
-
         cur.execute(new_standard_entry_query, entry_data)
-
         con.commit()
-        con.close()
-        print('STATEMENT: Standard added successfully.')
 
-        # Grade work
+        # gets grade & checks if it's not NA
         grade = request.form['input_grade']
 
-        con = create_connection(DATABASE_NAME)
-        cur = con.cursor()
-
-        entry_id = cur.execute(get_standard_id, (entry_as, user_id,)).fetchall()[0][0]
-
-        con.commit()
-        con.close()
-
         if grade != "NA":
-            add_credits([entry_as, grade, entry_id,])
-            print("STATUS: Added grade {} for {} of user {} (ID: {}).".format(entry_id, grade, session['username'],
-                                                                              user_id))
+            # fetches standard database ID from database
+            cur = con.cursor()
+            entry_id = cur.execute(get_standard_id, (entry_as, user_id,)).fetchall()[0][0]
+            con.commit()
 
+            # adds grade
+            add_credits([entry_as, grade, entry_id])
+
+        con.close()
         return load_add_standard(success, "success")                              
                                                                                   
                                                                                   
 @app.route('/delete-standard/<standard_id>')                                      
-def delete_standard(standard_id):                                                 
+def delete_standard(standard_id):
+    """deletes standard with the given standard id"""
     con = create_connection(DATABASE_NAME)
-    cur = con.cursor()
 
+    # deletes standard from standard table
+    cur = con.cursor()
     cur.execute(delete_standard_query, standard_id)
-
     con.commit()
-    con.close()
 
-    con = create_connection(DATABASE_NAME)
+    # deletes grade from result table
     cur = con.cursor()
-
     cur.execute(delete_result_query, standard_id)
-
     con.commit()
     con.close()
 
-    print('STATEMENT: Standard {} was deleted by {} (ID: {}).'.format(standard_id, session['username'],
-                                                                      session['user_id']))
     return redirect('/overview')
 
 
 @app.route('/edit-standard/<standard_id>')
 def edit_standard(standard_id):
+    """renders form to edit a standard, including data to be entered"""
     login_check()
     action = "/update-standard/{}".format(standard_id)
 
+    # checks if the standard exists. If not, fills in an empty list for the form
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
-
     error = False
     try:
         old_version = cur.execute(get_standard_query, (standard_id, session['user_id'],)).fetchall()
-        print(old_version)
     except IndexError:
         message = unknown_url
         colour = "warning"
-        content = [[], [], [], [], [], [], [], [], [], [], [], []]
         error = True
+        content = [[], [], [], [], [], [], [], [], [], [], [], []]
         old_version = "error"
-
     con.commit()
-    con.close()
 
-    con = create_connection(DATABASE_NAME)
     cur = con.cursor()
-
     # Determine whenever the standard has a grade attached
     # grade_get = True
     # try:
@@ -485,23 +453,20 @@ def edit_standard(standard_id):
     #     grade_get = False
     #     grade = "NA"
 
+    # finds grade from database, if existent, or saves it as NA
     try:
         grade = cur.execute(get_grade_query, (standard_id, session['user_id'],)).fetchall()[0][0]
+        con.commit()
     except IndexError:
         grade = "NA"
-
-    con.commit()
     con.close()
 
-    if error is True and len(old_version) > 1:
-        return load_add_standard(data_problem, "danger")
-
-    elif error is False:
+    # If the standard exists, prepares information for the form
+    if error is False:
         message = False
         colour = "primary"
         content = old_version[0]
         content = content + (grade,)
-    print(content)
 
     return render_template("enter_standard.html", alert=message, logged_in=is_logged_in(),
                            session=session, colour=colour, content=content, action=action)
@@ -509,8 +474,11 @@ def edit_standard(standard_id):
 
 @app.route('/update-standard/<standard_id>', methods=['POST'])
 def update_standard(standard_id):
+    """Checks validity of data from form and updates standard or raises appropriate error"""
+
     login_check()
 
+    # stores data from form in variables
     entry_as = request.form['standard_name']
     entry_desc = request.form['description']
     entry_cred = request.form['credits']
@@ -522,8 +490,7 @@ def update_standard(standard_id):
     entry_ue = request.form['ue_credits']
     user_id = session['user_id']
 
-    # Check if input valid:
-    # Check if credit number above / equal to 0, if int.
+    # Check if credit number above or equal to 0 and if it's an integer, or raises appropriate error message
     try:
         if 0 > int(entry_cred):
             return load_add_standard(credit_value, "warning")
@@ -531,7 +498,7 @@ def update_standard(standard_id):
         print("ERROR: Integer input (credit number) is not written in integers.")
         return load_add_standard(int_input, "warning")
 
-    # Check if AS number too large / too small, if int.
+    # Check if AS number too large or too small and if it's an integer, or raises appropriate error message
     try:
         if int(entry_as) <= 0 or 2147483647 < int(entry_as):
             return load_add_standard(as_value, "warning")
@@ -539,74 +506,69 @@ def update_standard(standard_id):
         print("ERROR: Integer input (AS number) is not written in integers.")
         return load_add_standard(int_input, "warning")
 
-    # Check if the AS number already exists
+    # Check if the AS number was changed
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
-
-    cur.execute(count_rows_credit_entry, (entry_as, user_id,))
-    result_standard = cur.fetchall()
-
+    previous_as = cur.execute(get_standard_query, (standard_id, user_id)).fetchall()[0][1]
     con.commit()
-    con.close()
 
-    result_standard = result_standard[0][0]
-    if result_standard > 1:
-        print("ERROR: AS Number exists already.")
-        return load_add_standard(as_input, "warning")
-
-    else:
-        # Updates standard
-        entry_data = (entry_as, entry_desc, entry_cred, entry_lev, entry_read, entry_writ, entry_lit, entry_num,
-                      entry_ue, standard_id, user_id)
-
-        con = create_connection(DATABASE_NAME)
+    if int(previous_as) != int(entry_as):
+        # fetches number of standards with the new AS number & raises error if it exists
         cur = con.cursor()
-
-        cur.execute(update_standard_query, entry_data)
-
+        cur.execute(count_rows_credit_entry, (entry_as, user_id,))
+        result_standard = cur.fetchall()
         con.commit()
-        con.close()
+        result_standard = result_standard[0][0]
 
-    con = create_connection(DATABASE_NAME)
+        if result_standard >= 1:
+            print("ERROR: AS Number already in usage.")
+            return load_add_standard(as_input, "warning")
+
+    # Updates standard in database
+    entry_data = (entry_as, entry_desc, entry_cred, entry_lev, entry_read, entry_writ, entry_lit, entry_num,
+                  entry_ue, standard_id, user_id)
     cur = con.cursor()
-
-    new_standard = cur.execute(get_standard_query, (standard_id, user_id)).fetchall()[0]
-    print("new data in base", new_standard)
+    cur.execute(update_standard_query, entry_data)
     con.commit()
-    con.close()
 
+    # Debugging: checking if the new standard in the DB is correctly entered
+    cur = con.cursor()
+    new_standard = cur.execute(get_standard_query, (standard_id, user_id)).fetchall()[0]
+    con.commit()
+    print("Entry data into db: ",  entry_data)
+    print("New data in db: ", new_standard)
+
+    # If the grade is NA, then the form is complete and the user is given the overview.
     grade = request.form['input_grade']
-
     if grade == "NA":
         return redirect('/overview')
 
-    # COUNT ROWS IN RESULTS WHERE STANDARD_ID
-
-    con = create_connection(DATABASE_NAME)
+    # Checks if there already is a result.
     cur = con.cursor()
-
     row_count = cur.execute(count_rows_new_entry, (standard_id, user_id)).fetchall()[0][0]
-
     con.commit()
-    con.close()
-    print("Row Count: ", row_count)
+
     if row_count == 0:
-        pass
-    #     return add_credits([entry_as, grade, standard_id])
-
-    elif row_count == 1:
-        # Update grade in the database
-        con = create_connection(DATABASE_NAME)
+        # Adds grade to db & redirects to overview
         cur = con.cursor()
-
-        cur.execute(update_grade_query, (grade, standard_id, user_id))
-
+        cur.execute(new_credit_entry_query, (standard_id, grade, user_id))
         con.commit()
         con.close()
         return redirect('/overview')
-    else:
 
-        return "error uwu"
+    elif row_count == 1:
+        # Update grade in the database & redirects to overview
+        cur = con.cursor()
+        cur.execute(update_grade_query, (grade, standard_id, user_id))
+        con.commit()
+        con.close()
+        return redirect('/overview')
+
+    else:
+        # Raises error
+        con.close()
+        print("ERROR: There is more than one result with the same standard ID in the result table!")
+        return overview(result_multiple, "danger")
 
 
 @app.route('/register')

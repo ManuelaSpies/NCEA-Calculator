@@ -23,3 +23,6 @@ credit_value = "Negative credits aren't a thing."
 as_value = "This AS number is out of the possible boundaries."
 int_input = "The input wasn't an integer. That's a problem, you know."
 as_input = "This AS number was already used."
+
+result_multiple = "There is an error with the database. Please contact the administrator and inform them that there" \
+                  "is more than one result of one standard id in the results table."
