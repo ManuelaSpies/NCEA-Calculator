@@ -573,6 +573,7 @@ def update_standard(standard_id):
 
 @app.route('/register')
 def register(message=False, colour="primary"):
+    """renders register page"""
     if is_logged_in() is not False:
         return redirect('/')
     return render_template("register.html", error_message=message, logged_in=is_logged_in(), session=session,
@@ -581,67 +582,65 @@ def register(message=False, colour="primary"):
 
 @app.route('/create-new-user', methods=['POST'])
 def create_new_user():
+    """creates new user with encrypted password, after validating username and password"""
+    # stores data from form in variables
     username = request.form['username']
     password1 = request.form['password1']
     password2 = request.form['password2']
 
+    # checks if the two passwords are the same, and rises appropriate error if not
     if password1 != password2:
         return register(password_match, 'warning')
 
+    # hashes password & prepares adding the user to the database
     hashed_password = flask_bcrypt.generate_password_hash(password1).decode('utf-8')
     new_user = (username, hashed_password)
 
+    # adds new user to the database
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
-
-    # Catches user name already exists errors.
+    # Try/except catches user name already exists-error
     try:
         cur.execute(create_user, new_user)
     except sqlite3.IntegrityError:
         return register(username_exists, 'warning')
-
     con.commit()
-    con.close()
 
-    con = create_connection(DATABASE_NAME)
+    # fetches user_id & updates session
     cur = con.cursor()
-
     user_data = cur.execute(find_user, (username,)).fetchall()[0]
-    print("NEW USER: {}".format(user_data))
     user_id = user_data[0]
 
     session['user_id'] = user_id
     session['username'] = username
-    print("STATUS: ", user_id, "created and in session.")
+
     return redirect('/')
 
 
 @app.route('/logging-in', methods=['POST'])
 def login():
+    """logs user in, or raises errors if appropriate"""
+    # stores user input
     username = request.form['login-username']
     password = request.form['login-password']
 
+    # Checks if there is an account with the username.
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
-
-    # Check if there are multiple accounts or none of that username.
     cur.execute(count_rows_username, (username,))
     user_check = cur.fetchall()[0][0]
-
     con.commit()
-    con.close()
 
     if user_check > 1:
+        print("ERROR: There is more than one account with the same username.")
         return login_page(account_error, "danger")
     elif user_check == 0:
+        print("USER ERROR: This username does not exist.")
         return login_page(incorrect_input, "warning")
 
-    # Check if data exist (?)
-    con = create_connection(DATABASE_NAME)
+    # Fetches information on the username or raises error (concerning something being wrong with database)
     cur = con.cursor()
-
     user_data = cur.execute(find_user, (username,)).fetchall()
-
     con.commit()
     con.close()
 
@@ -650,13 +649,15 @@ def login():
         username = user_data[0][1]
         db_password = user_data[0][2]
     except IndexError:
+        print("ERROR: Something is wrong with the data received from the database.")
         return login_page(incorrect_input, "warning")
 
     # Checks if password is correct.
     if not flask_bcrypt.check_password_hash(db_password, password):
-        print("ERROR: Hash code doesn't align with user's input.")
+        print("USER ERROR: Hash code doesn't align with user's input.")
         return login_page(incorrect_input, "warning")
 
+    # Updates session and therefore logs user in
     session['user_id'] = user_id
     session['username'] = username
     return redirect('/')
@@ -664,16 +665,19 @@ def login():
 
 @app.route('/logout')
 def logout():
+    """logs user out"""
     login_check()
     print("Status: User logged out.")
     # print(list(session.keys()))
     [session.pop(key) for key in list(session.keys())]
     # print(list(session.keys()))
+
     return redirect('/')
 
 
 @app.route('/settings')
 def settings_page(message=False, colour="primary"):
+    """renders settings page with neccessary information from the session"""
     login_check()
 
     user_info = [session['user_id'], session['username']]
@@ -682,6 +686,7 @@ def settings_page(message=False, colour="primary"):
 
 @app.route('/change-username', methods=['POST'])
 def change_username():
+    """changes username after validating user input"""
     # Checks if the user is logged in
     login_check()
 
@@ -713,22 +718,23 @@ def change_username():
 
 @app.route('/change-password', methods=['POST'])
 def change_password():
+    """changes password if input is valid"""
     login_check()
 
-    # check old password
+    # Checks old password
     old_pw = request.form['oldpassword']
     pw_check = check_password(old_pw, session)
     if pw_check[0] is False:
         return render_template("login.html", message=pw_check[1], colour=pw_check[2])
 
-    # Check if the new password was typed correctly. If not, return and notify user.
+    # Checks if the new password was typed correctly. If not, return and notify user.
     new_pw_1 = request.form['newpassword1']
     new_pw_2 = request.form['newpassword2']
     if new_pw_1 != new_pw_2:
         print("USER ERROR: Passwords don't align.")
         return settings_page(password_match, "warning")
 
-    # Overwrite password.
+    # Overwrites password.
     hashed_password = flask_bcrypt.generate_password_hash(new_pw_1).decode('utf-8')
     user_id = session['user_id']
     user_data = (hashed_password, user_id)
@@ -745,113 +751,86 @@ def change_password():
 
 @app.route('/delete-account', methods=['GET', 'POST'])
 def delete_user_account():
+    """deletes account after validating user input"""
+    user_id = session['user_id']
+
     # Check if the user agrees to delete the account
     security = request.form['security'].lower().replace(" ", "")
     if security != 'yes':
-        print("ACTION ABORTED: User did not agree.")
+        print("ACTION ABORTED: User did not agree to deleting account.")
         return settings_page(agreement, "warning")
 
-    # Username check
+    # Checks if username is correctly input
     username = request.form['username']
     if username != session['username']:
         print("ACTION ABORTED: User did not input username correctly.")
         return settings_page(incorrect_input, "warning")
 
-    # Password check 1
+    # Checks if password 1 was correctly entered
     password1 = request.form['password1']
     pw_check1 = check_password(password1, session)
     if pw_check1[0] is False:
         print("ACTION ABORTED: User did not input password (input one) correctly.")
         return render_template("login.html", message=pw_check1[1], colour=pw_check1[2])
 
-    # Password check 2
+    # Checks if password 2 was correctly entered
     password2 = request.form['password2']
     pw_check2 = check_password(password2, session)
     if pw_check2[0] is False:
         print("ACTION ABORTED: User did not input password (input two) correctly.")
         return render_template("login.html", message=pw_check2[1], colour=pw_check2[2])
 
-    # Deleting the account process
-    user_id = session['user_id']
-
     # Deleting data from standard table
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
     cur.execute(delete_account_standard, (user_id,))
     con.commit()
-    con.close()
 
     # Deleting data from result table
-    con = create_connection(DATABASE_NAME)
     cur = con.cursor()
     cur.execute(delete_account_result, (user_id,))
     con.commit()
-    con.close()
 
     # Deleting data from user table
-    con = create_connection(DATABASE_NAME)
     cur = con.cursor()
     cur.execute(delete_account_user, (user_id,))
     con.commit()
     con.close()
 
-    print("STATUS: Deleted user {} (ID: {}). Logged out.".format(username, user_id))
     return redirect('/logout')
 
 
 @app.route('/delete-data', methods=['GET', 'POST'])
 def delete_user_data():
+    """deletes all standards and results of the user"""
+    user_id = session['user_id']
+
     # Check if the user agrees to delete all data
     security = request.form['security2'].lower().replace(" ", "")
     if security != 'yes':
-        print("ACTION ABORTED: User did not agree.")
+        print("ACTION ABORTED: User did not agree to deleting all data.")
         return settings_page(agreement, "warning")
 
-    # Password check 1
+    # Checks if password is correctly entered
     password1 = request.form['pw_data']
     pw_check1 = check_password(password1, session)
     if pw_check1[0] is False:
         print("ACTION ABORTED: User did not input password (input one) correctly.")
         return render_template("login.html", message=pw_check1[1], colour=pw_check1[2])
 
-    # Deleting the account process
-    user_id = session['user_id']
-
     # Deleting data from standard table
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
     cur.execute(delete_account_standard, (user_id,))
     con.commit()
-    con.close()
 
     # Deleting data from result table
-    con = create_connection(DATABASE_NAME)
     cur = con.cursor()
     cur.execute(delete_account_result, (user_id,))
     con.commit()
     con.close()
 
-    print("STATUS: All data of {} (ID: {}) was deleted.".format(session['username'], session['user_id']))
     return settings_page(success, 'success')
-
-
-@app.route('/loop')
-def loop_usage_thing():
-    con = create_connection(DATABASE_NAME)
-    cur = con.cursor()
-    data = cur.execute(select_all).fetchall()
-    con.commit()
-    con.close()
-
-    list_of_standards = [['Standard Name:', ], ['Description:', ], ['Credits:', ], ['NCEA Level: ', ]]
-
-    for item in data:
-        list_of_standards[0].append(item[0])
-        list_of_standards[1].append(item[1])
-        list_of_standards[2].append(item[2])
-        list_of_standards[3].append(item[3])
-    print(list_of_standards)
-    return render_template("all_standards.html", the_list=list_of_standards)
 
 
 if __name__ == "__main__":
