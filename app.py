@@ -158,6 +158,16 @@ def check_password(user_input, user_session=session):
     return [True, False, "light"]
 
 
+@app.errorhandler(404)
+def page_not_found(error):
+    """raises error if the page was not found"""
+    if is_logged_in() != False:
+        base = "base.html"
+    else:
+        base = "nologin_base.html"
+    return render_template('404.html', session=session, base=base, error=error)
+
+
 @app.route('/')
 def main():
     """renders home.html, if the user is logged in"""
@@ -275,25 +285,25 @@ def add_credits(information=[]):
 
     # determines if the input comes from a form or was passed on, and stores data according to that
     if information == []:
-        entry_name = request.form['input_as']
+        entry_id = request.form['input_as']
         entry_grade = request.form['input_grade']
-
     else:
-        entry_name = information[0]
+        entry_id = information[0]
         entry_grade = information[1]
         entry_id = information[2]
+    print(entry_id, entry_grade)
 
     # Checks if the standard (AS number) exists
     con = create_connection(DATABASE_NAME)
     cur = con.cursor()
-    cur.execute(count_rows_credit_entry, (entry_name[0][0], user_id))
+    cur.execute(count_rows_standard_id, (entry_id, user_id))
     result_standard = cur.fetchall()
     result_standard = result_standard[0][0]
     con.commit()
 
     # Checks if there already is a result
     cur = con.cursor()
-    cur.execute(count_rows_new_entry, (entry_name[0][0], user_id))
+    cur.execute(count_rows_new_entry, (entry_id, user_id))
     result_results = cur.fetchall()
     result_results = result_results[0][0]
     con.commit()
@@ -312,7 +322,7 @@ def add_credits(information=[]):
 
     # Adds result to database
     else:
-        entry_data = (entry_name, entry_grade, user_id)
+        entry_data = (entry_id, entry_grade, user_id)
         cur = con.cursor()
         cur.execute(new_credit_entry_query, entry_data)
         con.commit()
@@ -353,8 +363,13 @@ def do_add_standard():
         if 0 > int(entry_cred):
             print("USER ERROR: AS Number not above or equal to zero.")
             return load_add_standard(credit_value, "warning")
-    except TypeError or ValueError:
-        print("USER ERROR: AS Number not written as integer.")
+        elif 2147483647 < int(entry_cred):
+            return load_add_standard(credit_value, "warning")
+    except TypeError:
+        print("USER ERROR: Credits not written as integer.")
+        return load_add_standard(int_input, "warning")
+    except ValueError:
+        print("USER ERROR: Credits not written as integer.")
         return load_add_standard(int_input, "warning")
 
     # Checks if AS number too large or too small and if it's an integer, or raises appropriate error.
@@ -362,8 +377,11 @@ def do_add_standard():
         if int(entry_as) <= 0 or 2147483647 < int(entry_as):
             print("USER ERROR: AS Number outside boundaries.")
             return load_add_standard(as_value, "warning")
-    except TypeError or ValueError:
+    except TypeError:
         print("ERROR: AS number not written as integer.")
+        return load_add_standard(int_input, "warning")
+    except ValueError:
+        print("USER ERROR: AS Number not written as integer.")
         return load_add_standard(int_input, "warning")
 
     # Checks if the AS number already exists
@@ -480,6 +498,7 @@ def update_standard(standard_id):
 
     # stores data from form in variables
     entry_as = request.form['standard_name']
+    print(entry_as)
     entry_desc = request.form['description']
     entry_cred = request.form['credits']
     entry_lev = request.form['ncea_level']
@@ -490,20 +509,28 @@ def update_standard(standard_id):
     entry_ue = request.form['ue_credits']
     user_id = session['user_id']
 
-    # Check if credit number above or equal to 0 and if it's an integer, or raises appropriate error message
+    # Check if credit number above or equal to 0, too large and if it's an integer, or raises appropriate error message
     try:
         if 0 > int(entry_cred):
             return load_add_standard(credit_value, "warning")
-    except TypeError or ValueError:
-        print("ERROR: Integer input (credit number) is not written in integers.")
+        elif 2147483647 < int(entry_cred):
+            return load_add_standard(credit_value, "warning")
+    except TypeError:
+        print("USER ERROR: Integer input (credit number) is not written in integers.")
+        return load_add_standard(int_input, "warning")
+    except ValueError:
+        print("USER ERROR: Credits not written as integer.")
         return load_add_standard(int_input, "warning")
 
     # Check if AS number too large or too small and if it's an integer, or raises appropriate error message
     try:
         if int(entry_as) <= 0 or 2147483647 < int(entry_as):
             return load_add_standard(as_value, "warning")
-    except TypeError or ValueError:
-        print("ERROR: Integer input (AS number) is not written in integers.")
+    except TypeError:
+        print("USER ERROR: Integer input (AS number) is not written in integers.")
+        return load_add_standard(int_input, "warning")
+    except ValueError:
+        print("USER ERROR: AS Number not written as integer.")
         return load_add_standard(int_input, "warning")
 
     # Check if the AS number was changed

@@ -19,9 +19,10 @@ data_used = "You've already added this. You can't edit this here."
 
 data_problem = "There is an issue with your data. Please contact a server admin."
 
-credit_value = "Negative credits aren't a thing."
-as_value = "This AS number is out of the possible boundaries."
-int_input = "The input wasn't an integer. That's a problem, you know."
+credit_value = "Negative credits aren't a thing, and you can't go above 2147483647. Don't tell me you" \
+               "get that many credits for one standard smh."
+as_value = "This AS number is out of the possible boundaries. (0 to 2147483647)."
+int_input = "The input (AS identification number or number of credits) wasn't an integer. That's a problem, you know."
 as_input = "This AS number was already used."
 
 result_multiple = "There is an error with the database. Please contact the administrator and inform them that there" \

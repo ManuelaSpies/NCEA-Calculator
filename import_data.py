@@ -58,6 +58,10 @@ count_rows_credit_entry = """SELECT COUNT(*)
                         FROM standard
                         WHERE standard_name = ?
                         AND standard_user = ?;"""
+count_rows_standard_id = """SELECT COUNT(*)
+                        FROM standard
+                        WHERE standard_id = ?
+                        AND standard_user = ?;"""
 count_rows_new_entry = """SELECT COUNT(*)
                           FROM result
                           WHERE as_id = ?
@@ -65,7 +69,7 @@ count_rows_new_entry = """SELECT COUNT(*)
 count_rows_username = """SELECT COUNT(*) FROM user 
                           WHERE username = ?"""
 
-# Get Credits queries
+# Get Credits queries & queries to calculate amount of credits
 get_credits_all_query = """SELECT credits, grade
             FROM result JOIN standard
             ON as_id = standard_id
@@ -126,14 +130,14 @@ get_grade_query = """SELECT grade FROM result
 
 update_standard_query = """UPDATE standard
                      SET standard_name = ?
-                     AND description = ?
-                     AND credits = ?
-                     AND ncea_level = ?
-                     AND reading = ?
-                     AND writing = ?
-                     AND literacy = ?
-                     AND numeracy = ?
-                     AND ue_credits = ?
+                     , description = ?
+                     , credits = ?
+                     , ncea_level = ?
+                     , reading = ?
+                     , writing = ?
+                     , literacy = ?
+                     , numeracy = ?
+                     , ue_credits = ?
                      WHERE standard_id = ?
                      AND standard_user = ?;"""
 update_grade_query = """UPDATE result

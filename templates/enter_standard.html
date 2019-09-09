@@ -11,7 +11,9 @@
     {% if alert != False %}
         <div class="alert alert-{{ colour }}">{{ alert }}</div>
     {% endif %}
+
     <form method="post" action="{{ action }}">
+        <!-- AS Identification Number / name of standard -->
         <div class="form-group row">
             <label for="standard_name" class="col-4 col-form-label">AS Identification Number</label>
             <div class="col-8">
@@ -24,6 +26,8 @@
                 </div>
             </div>
         </div>
+
+        <!-- Standard description -->
         <div class="form-group row">
             <label for="description" class="col-4 col-form-label">Description (What is it about?)</label>
             <div class="col-8">
@@ -31,6 +35,8 @@
                           required="required">{{ content[2] }}</textarea>
             </div>
         </div>
+
+        <!-- Number of credits -->
         <div class="form-group row">
             <label for="credits" class="col-4 col-form-label">Credits</label>
             <div class="col-8">
@@ -39,6 +45,8 @@
                 <span id="creditsHelpBlock" class="form-text text-muted">Enter an integer only.</span>
             </div>
         </div>
+
+        <!-- NCEA Level -->
         <div class="form-group row">
             <label for="ncea_level" class="col-4 col-form-label">NCEA Level</label>
             <div class="col-8">
@@ -49,6 +57,8 @@
                 </select>
             </div>
         </div>
+
+        <!-- UE Reading -->
         <div class="form-group row">
             <label class="col-4">UE Reading</label>
             <div class="col-8">
@@ -64,6 +74,8 @@
                 </div>
             </div>
         </div>
+
+        <!-- UE Writing -->
         <div class="form-group row">
             <label class="col-4">UE Writing</label>
             <div class="col-8">
@@ -79,6 +91,8 @@
                 </div>
             </div>
         </div>
+
+        <!-- Level 1 literacy -->
         <div class="form-group row">
             <label class="col-4">L1 Literacy</label>
             <div class="col-8">
@@ -94,6 +108,8 @@
                 </div>
             </div>
         </div>
+
+        <!-- Level 1 Numeracy -->
         <div class="form-group row">
             <label class="col-4">L1 Numeracy</label>
             <div class="col-8">
@@ -109,6 +125,8 @@
                 </div>
             </div>
         </div>
+
+        <!-- UE 16 Subjects -->
         <div class="form-group row">
             <label class="col-4">Is the subject counting towards UE?</label>
             <div class="col-8">
@@ -152,6 +170,7 @@
             </div>
         </div>
 
+        <!-- Submit button -->
         <div class="form-group row">
             <div class="offset-4 col-8">
                 <button name="submit" type="submit" class="btn btn-primary">Submit</button>
