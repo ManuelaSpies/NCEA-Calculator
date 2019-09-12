@@ -10,7 +10,7 @@
     <div class="">
         <h2>NCEA Progress</h2>
             {% if alert != False %}
-                <div class="alert alert-{{ colour }}">{{ alert }}</div>
+                <div class="alert alert-{{ colour }}">{{ message }}</div>
             {% endif %}
         {# Unfinished: pie charts #}
         {#        <div class="tabber">#}
@@ -105,7 +105,7 @@
                 <th>UE Writing</th>
                 <th>UE Credits</th>
                 <th>Grade</th>
-                <th></th>
+                <th>Edit</th>
             </tr>
             {% for row in standards %}
                 <tr>

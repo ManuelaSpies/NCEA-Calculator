@@ -483,7 +483,11 @@ def edit_standard(standard_id):
     if error is False:
         message = False
         colour = "primary"
-        content = old_version[0]
+        try:
+            content = old_version[0]
+        except IndexError:
+            print("USER ERROR: IndexError, possibly accessing standard that's not theirs.")
+            return overview(wrong_acc, "danger")
         content = content + (grade,)
 
     return render_template("enter_standard.html", alert=message, logged_in=is_logged_in(),
