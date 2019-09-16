@@ -154,11 +154,13 @@
                 </fieldset>
             </form>
             <form class="col form-horizontal custom-box" method="post" action="/delete-data"
-                  title="Delete your stored data function" aria-label="Use this option to delete all data (standards & achievements) from your account.">
+                  title="Delete your stored data function" aria-label="Use this option to delete all data
+                  (standards & achievements) from your account.">
                 <fieldset>
                     <h2>Delete your data</h2>
 
-                    <p>The account you are using is <strong>{{ user[1] }}</strong>.</p>
+                    <p>The account you are using is <strong>{{ user[1] }}</strong>. You cannot restore your data once
+                        you delete it. This includes all standards and grades you have entered.</p>
 
                     <!-- Password input-->
                     <div class="form-group row">
